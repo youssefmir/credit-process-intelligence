@@ -1,0 +1,26 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Données brutes et intermédiaires (régénérées par `make data` et `make pipeline`)
+data/raw/
+data/interim/
+data/models/
+
+# Site
+node_modules/
+site/dist/
+site/test-results/
+site/playwright-report/
+site/.vite/
+
+# Divers
+.env
+.DS_Store
+*.log
