@@ -119,8 +119,16 @@ def fetch_pm4py(dest: Path) -> dict[str, Any]:
         repo = Path(tmp) / "pm4py-core"
         run = {"check": True, "capture_output": True, "text": True, "timeout": 600}
         subprocess.run(
-            ["git", "clone", "--depth", "1", "--filter=blob:none", "--sparse",
-             PM4PY_REPO, str(repo)],
+            [
+                "git",
+                "clone",
+                "--depth",
+                "1",
+                "--filter=blob:none",
+                "--sparse",
+                PM4PY_REPO,
+                str(repo),
+            ],
             **run,  # type: ignore[call-overload]
         )
         subprocess.run(
@@ -128,7 +136,8 @@ def fetch_pm4py(dest: Path) -> dict[str, Any]:
             **run,  # type: ignore[call-overload]
         )
         commit = subprocess.run(
-            ["git", "-C", str(repo), "rev-parse", "HEAD"], **run  # type: ignore[call-overload]
+            ["git", "-C", str(repo), "rev-parse", "HEAD"],
+            **run,  # type: ignore[call-overload]
         ).stdout.strip()
         src = repo / PM4PY_PATH
         if not src.exists():
@@ -155,8 +164,10 @@ def acquire(force: bool = False, log: Any = print) -> dict[str, Any]:
     RAW_DIR.mkdir(parents=True, exist_ok=True)
     if RAW_LOG.exists() and PROVENANCE_FILE.exists() and not force:
         counts = verify_counts(RAW_LOG)
-        log(f"Données déjà présentes et vérifiées : {counts.cases} dossiers, "
-            f"{counts.events} événements.")
+        log(
+            f"Données déjà présentes et vérifiées : {counts.cases} dossiers, "
+            f"{counts.events} événements."
+        )
         return dict(json.loads(PROVENANCE_FILE.read_text(encoding="utf-8")))
 
     tmp = RAW_LOG.with_suffix(".part")
@@ -175,7 +186,7 @@ def acquire(force: bool = False, log: Any = print) -> dict[str, Any]:
             log(f"Tentative : {name}…")
             info = strategy()
             break
-        except Exception as exc:  # noqa: BLE001 - on consigne et on passe au repli suivant
+        except Exception as exc:
             attempts.append(f"{name} : {type(exc).__name__} : {exc}")
             log(f"  échec ({type(exc).__name__}) : {exc}")
             tmp.unlink(missing_ok=True)
