@@ -106,11 +106,11 @@ def build_cases(events: pd.DataFrame, sessions: pd.DataFrame) -> pd.DataFrame:
     cases["stage"] = stage
 
     # Présence de tâches et volumes de sessions par tâche.
-    w_acts = events[events["category"] == "W"].groupby("case_id")["activity"].unique()
+    w_events = events[events["category"] == "W"]
+    presence = pd.crosstab(w_events["case_id"], w_events["activity"]) > 0
     for act, short in W_SHORT.items():
-        cases[f"has_{short}"] = w_acts.reindex(idx).apply(
-            lambda a, act=act: isinstance(a, np.ndarray) and act in a
-        )
+        has = presence[act] if act in presence.columns else pd.Series(dtype=bool)
+        cases[f"has_{short}"] = has.reindex(idx, fill_value=False).astype(bool)
     sess = sessions.groupby(["case_id", "activity"]).agg(n=("dur_s", "size"), s=("dur_s", "sum"))
     for act, short in W_SHORT.items():
         sub = sess.xs(act, level="activity") if act in sess.index.get_level_values(1) else None
