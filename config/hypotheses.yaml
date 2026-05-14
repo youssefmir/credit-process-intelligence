@@ -1,0 +1,164 @@
+# Hypothèses du business case (toutes explicites, modifiables).
+#
+# Chaque hypothèse suit une loi triangulaire (min, mode, max) dans la simulation de
+# Monte Carlo ; le scénario central utilise le mode. Les valeurs « mesurées » (volumes,
+# heures, délais, taux) ne figurent PAS ici : elles sont calculées par le pipeline à
+# partir du journal BPI Challenge 2012.
+#
+# Unités : euros, heures, mois, parts entre 0 et 1.
+
+simulation:
+  iterations: 5000
+  horizon_months: 36
+  ramp_up_months: 6           # montée en charge linéaire après la mise en service
+  hours_per_fte: 1607         # durée annuelle légale du travail en France (35 h)
+
+common:
+  hourly_cost:
+    label: Coût horaire complet d'un conseiller back-office
+    unit: €/h
+    min: 38
+    mode: 45
+    max: 55
+    justification: >-
+      Salaire brut annuel d'environ 35 k€, charges patronales d'environ 45 % et frais de
+      structure (encadrement, poste de travail, locaux) d'environ 30 %, rapportés à 1 607 h.
+      Ordre de grandeur, à remplacer par le coût réel de l'établissement.
+  discount_rate:
+    label: Taux d'actualisation annuel
+    unit: part
+    min: 0.08
+    mode: 0.10
+    max: 0.12
+    justification: >-
+      Taux de rentabilité exigé pour un projet de transformation dans une banque de détail
+      (coût des fonds propres majoré d'une prime de risque projet).
+  volume_factor:
+    label: Correction du volume annualisé
+    unit: facteur
+    min: 0.85
+    mode: 1.0
+    max: 1.10
+    justification: >-
+      Le journal couvre 5 mois (octobre à février) ; la saisonnalité sur 12 mois est
+      inconnue. On encadre le volume annualisé de -15 % à +10 % (prudence à la hausse).
+  adoption:
+    label: Taux d'adoption en régime de croisière
+    unit: part
+    min: 0.75
+    mode: 0.90
+    max: 1.0
+    justification: >-
+      Part des dossiers éligibles réellement traités avec la nouvelle solution après la
+      montée en charge (exceptions, refus d'usage, cas non couverts).
+  net_margin:
+    label: Marge nette actualisée par euro prêté
+    unit: part du montant
+    min: 0.03
+    mode: 0.05
+    max: 0.08
+    justification: >-
+      Les 42 995 offres du BPI Challenge 2017 (même établissement, 2016) impliquent des
+      intérêts bruts médians d'environ 18 % du montant sur la durée du prêt (taux annuel
+      implicite médian proche de 5 %, durée médiane proche de 80 mois). Après coût de
+      refinancement, coût du risque et frais de gestion, on retient environ un quart à un
+      tiers des intérêts bruts.
+
+opportunities:
+  completeness:
+    title: Contrôle automatique de complétude à la soumission
+    short: Complétude à la soumission
+    build_cost: {label: Coût de construction, unit: €, min: 80000, mode: 110000, max: 160000,
+                 justification: "Lecture et classement des pièces (OCR et IA documentaire), règles de complétude, intégration au parcours de dépôt, recette ; environ 4 à 6 mois d'une équipe de 3 personnes."}
+    run_cost: {label: Coût de fonctionnement annuel, unit: €/an, min: 15000, mode: 22000, max: 30000,
+               justification: "Licences ou API de reconnaissance documentaire, hébergement, maintenance et suivi de la qualité."}
+    build_months: 5
+    loops_avoided:
+      label: Part des boucles « dossier incomplet » évitées
+      unit: part
+      min: 0.25
+      mode: 0.40
+      max: 0.55
+      justification: >-
+        Pièces absentes, illisibles ou périmées détectables automatiquement au dépôt ; une
+        partie des compléments naît toutefois des questions de l'analyste à la validation
+        et reste hors d'atteinte.
+    completion_calls_avoided:
+      label: Part des appels de complétion évités
+      unit: part
+      min: 0.10
+      mode: 0.20
+      max: 0.30
+      justification: >-
+        Les informations manquantes signalées en ligne au moment du dépôt évitent une partie
+        des appels de complétion (en moyenne 3,3 sessions d'appel par dossier complété).
+    effort_shift:
+      label: Part de l'effort reportée en amont
+      unit: part
+      min: 0.10
+      mode: 0.25
+      max: 0.40
+      justification: >-
+        Traitement des alertes du contrôle, accompagnement des clients en difficulté avec
+        le dépôt en ligne : une partie du temps économisé est réengagée en amont.
+    causal_share:
+      label: Part causale de l'écart d'annulation lié aux boucles
+      unit: part
+      min: 0.25
+      mode: 0.50
+      max: 0.75
+      justification: >-
+        Les dossiers passés par une boucle « incomplet » sont plus souvent annulés que les
+        autres dossiers validés (écart mesuré) ; seule une partie de cet écart est
+        attribuable à la boucle elle-même.
+  prioritization:
+    title: Priorisation des relances d'offres par score d'abandon
+    short: Relances priorisées
+    build_cost: {label: Coût de construction, unit: €, min: 40000, mode: 60000, max: 90000,
+                 justification: "Industrialisation du score, file de relance triée dans l'outil des conseillers, tableau de suivi ; environ 3 mois."}
+    run_cost: {label: Coût de fonctionnement annuel, unit: €/an, min: 10000, mode: 15000, max: 25000,
+               justification: "Supervision du modèle (dérive, recalibrage trimestriel), maintenance."}
+    build_months: 3
+    targeted_share:
+      label: Part des offres envoyées ciblées en priorité
+      unit: part
+      min: 0.20
+      mode: 0.20
+      max: 0.20
+      justification: Variable de pilotage (capacité de relance renforcée disponible).
+    recovery_rate:
+      label: Part des abandons ciblés récupérés par la relance renforcée
+      unit: part
+      min: 0.05
+      mode: 0.10
+      max: 0.20
+      justification: >-
+        Inconnue à ce stade : c'est précisément ce qu'un pilote A/B doit mesurer. Fourchette
+        volontairement large.
+    extra_calls:
+      label: Appels supplémentaires par dossier ciblé
+      unit: appels
+      min: 1
+      mode: 2
+      max: 3
+      justification: Relance renforcée (appel anticipé puis rappel avant expiration de l'offre).
+  preanalysis:
+    title: Pré-analyse assistée des dossiers à valider
+    short: Pré-analyse assistée
+    build_cost: {label: Coût de construction, unit: €, min: 90000, mode: 130000, max: 200000,
+                 justification: "Extraction et rapprochement des pièces, fiche de synthèse, évaluation de la qualité, garde-fous et documentation de conformité ; environ 6 mois."}
+    run_cost: {label: Coût de fonctionnement annuel, unit: €/an, min: 15000, mode: 25000, max: 40000,
+               justification: "Appels au modèle de langage (quelques centaines d'euros par an au volume observé), hébergement, supervision humaine de la qualité, maintenance."}
+    build_months: 6
+    validation_time_saved:
+      label: Réduction du temps de travail de validation
+      unit: part
+      min: 0.15
+      mode: 0.25
+      max: 0.40
+      justification: >-
+        Ordres de grandeur publiés sur l'IA générative en situation de travail réelle ou
+        contrôlée : +14 % de productivité en support client (Brynjolfsson, Li et Raymond),
+        -40 % de temps sur des tâches de rédaction professionnelle (Noy et Zhang), +25 % de
+        vitesse sur des tâches de conseil (Dell'Acqua et al.). La validation reste une
+        décision humaine : seule la préparation du dossier est accélérée.
