@@ -38,7 +38,7 @@ SITE_BPMN_DIR = ROOT / "site" / "public" / "bpmn"
 HYPOTHESES_FILE = CONFIG_DIR / "hypotheses.yaml"
 
 RAW_LOG = RAW_DIR / "bpic2012.xes.gz"
-PROVENANCE_FILE = RAW_DIR / "PROVENANCE.json"
+RAW_LOG_2017 = RAW_DIR / "bpic2017-offers.xes.gz"
 EVENTS_FILE = INTERIM_DIR / "events.parquet"
 
 #: Graine unique utilisée partout (échantillonnage, modèles, Monte Carlo).
