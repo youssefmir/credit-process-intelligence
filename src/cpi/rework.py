@@ -58,7 +58,7 @@ def rework_summary(
     appr_loop = appr.index.isin(loops.index)
 
     loop_work = loops["call_work_s"] + loops["reval_work_s"]
-    incomplete = {
+    incomplete: dict[str, Any] = {
         "cases": len(loops),
         "share_of_validated": round(len(loops) / int(reached_validation.sum()), 4),
         "share_of_approved": round(float(appr_loop.mean()), 4),
@@ -94,7 +94,7 @@ def rework_summary(
         .assign(n=lambda d: d["n_offers"].clip(upper=4))
         .groupby("n")["outcome"]
         .value_counts(normalize=True)
-        .unstack(fill_value=0.0)
+        .unstack(fill_value=0)
     )
     multiple = {
         "cases": len(multi),
@@ -107,7 +107,7 @@ def rework_summary(
             float(after_second["dur_s"].sum()) / 3600 * annual_factor
         ),
         "outcome_by_offers": {
-            str(int(n)): {str(k): round(float(v), 4) for k, v in row.items()}
+            str(n): {str(k): round(float(v), 4) for k, v in row.items()}
             for n, row in by_n.iterrows()
         },
     }
@@ -118,7 +118,7 @@ def rework_summary(
     returned = cases[cases["t_sent_back"].notna()]
     ret_d = (returned["t_sent_back"] - returned["t_first_offer"]).dt.total_seconds() / 86400
     hours_by_outcome = per_case.groupby("outcome")["s"].sum() / 3600
-    follow_ups = {
+    follow_ups: dict[str, Any] = {
         "cases": len(per_case),
         "calls": int(per_case["n"].sum()),
         "hours": _h(per_case["s"].sum()),
@@ -136,7 +136,7 @@ def rework_summary(
     }
 
     # Les appels postérieurs à une 2e offre sont inclus dans les relances d'offres.
-    total_h = incomplete["loop_hours"] + follow_ups["hours"]
+    total_h = float(incomplete["loop_hours"]) + float(follow_ups["hours"])
     return {
         "incomplete": incomplete,
         "multiple_offers": multiple,

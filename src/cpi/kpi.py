@@ -14,11 +14,12 @@ from cpi.config import TIMEZONE
 QUANTILES = (0.1, 0.25, 0.5, 0.75, 0.9)
 
 
-def _q(s: pd.Series, digits: int = 2) -> dict[str, float | None]:
+def _q(s: pd.Series, digits: int = 2) -> dict[str, float | int | None]:
     s = s.dropna()
     if s.empty:
-        return {f"p{int(q * 100)}": None for q in QUANTILES} | {"mean": None, "n": 0}
-    out: dict[str, float | None] = {
+        empty: dict[str, float | int | None] = {f"p{int(q * 100)}": None for q in QUANTILES}
+        return empty | {"mean": None, "n": 0}
+    out: dict[str, float | int | None] = {
         f"p{int(q * 100)}": round(float(s.quantile(q)), digits) for q in QUANTILES
     }
     out["mean"] = round(float(s.mean()), digits)
@@ -81,7 +82,7 @@ def phase_decomposition(cases: pd.DataFrame, sessions: pd.DataFrame) -> dict[str
         sessions.assign(phase=ph.to_numpy())
         .groupby(["case_id", "phase"])["dur_s"]
         .sum()
-        .unstack(fill_value=0.0)
+        .unstack(fill_value=0)
         .reindex(columns=list(PHASES), fill_value=0.0)
     )
     result: dict[str, Any] = {}
@@ -123,7 +124,7 @@ def phase_decomposition(cases: pd.DataFrame, sessions: pd.DataFrame) -> dict[str
 
 def activity_times(sessions: pd.DataFrame, waits: pd.DataFrame) -> list[dict[str, Any]]:
     """Par tâche humaine : volume, travail, attente en file, délai entre tentatives."""
-    rows = []
+    rows: list[dict[str, Any]] = []
     for act in W_ACTIVITIES:
         s = sessions[sessions["activity"] == act]
         w = waits[waits["activity"] == act]
@@ -188,9 +189,9 @@ def weekly_workload(sessions: pd.DataFrame) -> dict[str, Any]:
     local = sessions["end"].dt.tz_convert(TIMEZONE)
     week = local.dt.tz_localize(None).dt.to_period("W-SUN").dt.start_time
     df = sessions.assign(week=week)
-    pivot = (
-        df.groupby(["week", "activity"])["dur_s"].sum().unstack(fill_value=0.0) / 3600
-    ).reindex(columns=list(W_ACTIVITIES), fill_value=0.0)
+    pivot = (df.groupby(["week", "activity"])["dur_s"].sum().unstack(fill_value=0) / 3600).reindex(
+        columns=list(W_ACTIVITIES), fill_value=0.0
+    )
     return {
         "weeks": [d.date().isoformat() for d in pivot.index],
         "series": {act: [round(float(x), 1) for x in pivot[act]] for act in W_ACTIVITIES},

@@ -89,7 +89,8 @@ def process_map(
     """Carte de processus exportable : nœuds, arcs (dont début/fin), boucles."""
     v = view(events, view_name)
     dfg = directly_follows(events, view_name)
-    loops = dfg[dfg["source"] == dfg["target"]].set_index("source")
+    loops = dfg[dfg["source"] == dfg["target"]]
+    loop_counts = dict(zip(loops["source"].astype(str), loops["count"].astype(int), strict=True))
     edges_df = dfg[dfg["source"] != dfg["target"]]
 
     firsts = v.groupby("case_id", sort=False)["activity"].first().value_counts()
@@ -107,7 +108,7 @@ def process_map(
             "category": labels.category(act),
             "count": len(grp),
             "cases": int(grp["case_id"].nunique()),
-            "repeats": int(loops.loc[act, "count"]) if act in loops.index else 0,
+            "repeats": int(loop_counts.get(act, 0)),
         }
         if act in work.index:
             node["median_work_min"] = round(float(work[act]) / 60, 2)
@@ -120,17 +121,18 @@ def process_map(
     )
     nodes.append({"id": END, "label": "Fin", "category": "S", "count": n_cases, "cases": n_cases})
 
+    records = [{str(k): v for k, v in r.items()} for r in edges_df.to_dict("records")]
     edges: list[dict[str, Any]] = [
         {
-            "source": str(r.source),
-            "target": str(r.target),
-            "count": int(r.count),
-            "cases": int(r.cases),
-            "median_h": round(float(r.median_s) / 3600, 3),
-            "mean_h": round(float(r.mean_s) / 3600, 3),
-            "total_h": round(float(r.total_s) / 3600, 1),
+            "source": str(r["source"]),
+            "target": str(r["target"]),
+            "count": int(r["count"]),
+            "cases": int(r["cases"]),
+            "median_h": round(float(r["median_s"]) / 3600, 3),
+            "mean_h": round(float(r["mean_s"]) / 3600, 3),
+            "total_h": round(float(r["total_s"]) / 3600, 1),
         }
-        for r in edges_df.itertuples(index=False)
+        for r in records
     ]
     edges += [
         {"source": START, "target": str(a), "count": int(n), "cases": int(n)}
