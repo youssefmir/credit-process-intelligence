@@ -19,9 +19,6 @@ dependencies = [
   "scikit-learn>=1.5",
 ]
 
-[project.optional-dependencies]
-llm = ["httpx>=0.27"]
-
 [dependency-groups]
 dev = [
   "ipykernel>=6.29",

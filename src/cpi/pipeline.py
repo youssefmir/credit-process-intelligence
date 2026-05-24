@@ -18,6 +18,7 @@ import pandas as pd
 
 from cpi import (
     abandon,
+    assistant,
     calibration,
     data,
     discovery,
@@ -209,6 +210,10 @@ def run(log: Callable[[str], None] = print, with_docs: bool = True) -> dict[str,
     write_json("model", model_export)
     write_json("business_case", {**business, "calibration": calib})
     write_json("replay", replay.export(events, cases))
+    example = cases[
+        (cases["outcome"] == "approved") & cases["has_incomplete_calls"] & (cases["n_offers"] >= 2)
+    ].index.sort_values()[0]
+    write_json("preanalysis_example", assistant.build_brief(example, events, sessions, cases))
     step("export JSON")
 
     summary = headline(
