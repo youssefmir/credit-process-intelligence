@@ -6,7 +6,7 @@ UV ?= uv
 PY := $(UV) run python
 
 .DEFAULT_GOAL := help
-.PHONY: help install install-python data ingest pipeline docs
+.PHONY: help install install-python data ingest pipeline docs test-python lint-python
 
 help: ## Affiche cette aide
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
@@ -28,3 +28,11 @@ pipeline: data ## Analyse complète : qualité, process mining, KPI, modèle, bu
 docs: ## Régénère les documents chiffrés et les modèles BPMN depuis les exports
 	$(PY) -m cpi bpmn
 	$(PY) -m cpi docs
+
+test-python: ## Tests Python (pytest)
+	$(UV) run pytest
+
+lint-python: ## Lint et typage Python (ruff, mypy)
+	$(UV) run ruff check src tests
+	$(UV) run ruff format --check src tests
+	$(UV) run mypy src
