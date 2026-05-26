@@ -15,7 +15,6 @@ from __future__ import annotations
 import os
 import warnings
 from collections import Counter
-from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -254,7 +253,7 @@ def nominal_conformance(events: pd.DataFrame, cases: pd.DataFrame) -> dict[str, 
     }
 
 
-def inductive_model(events: pd.DataFrame, bpmn_out: Path | None = None) -> dict[str, Any]:
+def inductive_model(events: pd.DataFrame) -> dict[str, Any]:
     """Modèle découvert (inductive miner, filtre de bruit 20 %) et sa qualité."""
     import pm4py
 
@@ -265,9 +264,6 @@ def inductive_model(events: pd.DataFrame, bpmn_out: Path | None = None) -> dict[
         net, im, fm = pm4py.convert_to_petri_net(tree)
         fit = pm4py.fitness_token_based_replay(v, net, im, fm, **PM4PY_KEYS)
         precision = pm4py.precision_token_based_replay(v, net, im, fm, **PM4PY_KEYS)
-        if bpmn_out is not None:
-            bpmn_out.parent.mkdir(parents=True, exist_ok=True)
-            pm4py.write_bpmn(pm4py.convert_to_bpmn(tree), str(bpmn_out), auto_layout=False)
     return {
         "algorithm": "Inductive Miner infrequent (pm4py), filtre de bruit 0,2",
         "process_tree": str(tree),

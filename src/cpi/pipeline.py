@@ -32,7 +32,7 @@ from cpi import (
     simulation,
 )
 from cpi.cases import build_cases
-from cpi.config import DATASET, DOCS_DIR, MODELS_DIR, SEED, SITE_DATA_DIR
+from cpi.config import DATASET, MODELS_DIR, SEED, SITE_DATA_DIR
 from cpi.ingest import load_events
 from cpi.sessions import build_sessions, build_waits
 
@@ -101,7 +101,7 @@ def run(log: Callable[[str], None] = print, with_docs: bool = True) -> dict[str,
     }
     variants = {v: discovery.variants(events, cases, v, top=40) for v in ("milestones", "complete")}
     conformance = discovery.nominal_conformance(events, cases)
-    inductive = discovery.inductive_model(events, DOCS_DIR / "bpmn" / "discovered-inductive.bpmn")
+    inductive = discovery.inductive_model(events)
     step("découverte de processus")
 
     lead = kpi.lead_times(cases)
