@@ -24,3 +24,4 @@ site/.vite/
 .env
 .DS_Store
 *.log
+site/scripts/*-tmp.mjs

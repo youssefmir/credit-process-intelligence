@@ -1,0 +1,54 @@
+{
+  "name": "credit-process-intelligence-site",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Rapport interactif : process mining, KPI, prédiction des abandons et business case IA sur un processus réel de crédit (BPI Challenge 2012).",
+  "author": "Youssef Mir",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --port 4173 --strictPort",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "e2e": "playwright test",
+    "bpmn:svg": "node scripts/export-bpmn-svg.mjs",
+    "screenshots": "node scripts/screenshots.mjs",
+    "readme:render": "node scripts/render-readme.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@dagrejs/dagre": "^1.1.8",
+    "@fontsource-variable/archivo": "^5.3.0",
+    "@xyflow/react": "^12.12.0",
+    "bpmn-js": "^18.31.1",
+    "echarts": "^5.6.0",
+    "motion": "^12.43.0",
+    "react": "^19.2.9",
+    "react-dom": "^19.2.9"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@playwright/test": "1.63.0",
+    "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.26",
+    "github-markdown-css": "^5.9.0",
+    "globals": "^16.5.0",
+    "markdown-it": "^15.0.3",
+    "mermaid": "^11.17.2",
+    "sharp": "^0.35.5",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.72.1",
+    "vite": "^7.3.7",
+    "vitest": "^3.2.7"
+  }
+}
