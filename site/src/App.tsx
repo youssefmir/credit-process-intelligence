@@ -1,6 +1,7 @@
 import Footer from "./components/Footer";
 import Header from "./components/Header";
 import { useAllData } from "./lib/data";
+import Hero from "./sections/Hero";
 
 export default function App() {
   const { data, error } = useAllData();
@@ -20,6 +21,11 @@ export default function App() {
           <p className="wrap loading" aria-live="polite">
             Chargement des données…
           </p>
+        )}
+        {data && (
+          <>
+            <Hero data={data} />
+          </>
         )}
       </main>
       <Footer />
