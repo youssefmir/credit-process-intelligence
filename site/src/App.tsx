@@ -2,6 +2,8 @@ import Footer from "./components/Footer";
 import Header from "./components/Header";
 import { useAllData } from "./lib/data";
 import Hero from "./sections/Hero";
+import Summary from "./sections/Summary";
+import Approach from "./sections/Approach";
 
 export default function App() {
   const { data, error } = useAllData();
@@ -25,6 +27,8 @@ export default function App() {
         {data && (
           <>
             <Hero data={data} />
+            <Summary data={data} />
+            <Approach />
           </>
         )}
       </main>
