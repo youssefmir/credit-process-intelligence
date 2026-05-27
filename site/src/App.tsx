@@ -4,6 +4,7 @@ import { useAllData } from "./lib/data";
 import Hero from "./sections/Hero";
 import Summary from "./sections/Summary";
 import Approach from "./sections/Approach";
+import Process from "./sections/Process";
 
 export default function App() {
   const { data, error } = useAllData();
@@ -29,6 +30,7 @@ export default function App() {
             <Hero data={data} />
             <Summary data={data} />
             <Approach />
+            <Process data={data} />
           </>
         )}
       </main>
