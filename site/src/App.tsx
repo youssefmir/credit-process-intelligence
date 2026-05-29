@@ -1,3 +1,5 @@
+import { lazy, Suspense } from "react";
+
 import Footer from "./components/Footer";
 import Header from "./components/Header";
 import { useAllData } from "./lib/data";
@@ -9,6 +11,8 @@ import TimeLost from "./sections/TimeLost";
 import Rework from "./sections/Rework";
 import Abandon from "./sections/Abandon";
 import Prediction from "./sections/Prediction";
+
+const Opportunities = lazy(() => import("./sections/Opportunities"));
 
 export default function App() {
   const { data, error } = useAllData();
@@ -39,6 +43,9 @@ export default function App() {
             <Rework data={data} />
             <Abandon data={data} />
             <Prediction data={data} />
+            <Suspense fallback={<p className="wrap loading">Chargement…</p>}>
+              <Opportunities data={data} />
+            </Suspense>
           </>
         )}
       </main>
