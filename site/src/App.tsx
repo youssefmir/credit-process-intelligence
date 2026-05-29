@@ -5,6 +5,9 @@ import Hero from "./sections/Hero";
 import Summary from "./sections/Summary";
 import Approach from "./sections/Approach";
 import Process from "./sections/Process";
+import TimeLost from "./sections/TimeLost";
+import Rework from "./sections/Rework";
+import Abandon from "./sections/Abandon";
 
 export default function App() {
   const { data, error } = useAllData();
@@ -31,6 +34,9 @@ export default function App() {
             <Summary data={data} />
             <Approach />
             <Process data={data} />
+            <TimeLost data={data} />
+            <Rework data={data} />
+            <Abandon data={data} />
           </>
         )}
       </main>
