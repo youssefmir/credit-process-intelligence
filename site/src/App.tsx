@@ -8,6 +8,7 @@ import Process from "./sections/Process";
 import TimeLost from "./sections/TimeLost";
 import Rework from "./sections/Rework";
 import Abandon from "./sections/Abandon";
+import Prediction from "./sections/Prediction";
 
 export default function App() {
   const { data, error } = useAllData();
@@ -37,6 +38,7 @@ export default function App() {
             <TimeLost data={data} />
             <Rework data={data} />
             <Abandon data={data} />
+            <Prediction data={data} />
           </>
         )}
       </main>
