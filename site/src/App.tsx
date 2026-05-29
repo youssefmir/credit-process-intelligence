@@ -11,6 +11,8 @@ import TimeLost from "./sections/TimeLost";
 import Rework from "./sections/Rework";
 import Abandon from "./sections/Abandon";
 import Prediction from "./sections/Prediction";
+import Compliance from "./sections/Compliance";
+import Method from "./sections/Method";
 
 const Opportunities = lazy(() => import("./sections/Opportunities"));
 
@@ -46,6 +48,8 @@ export default function App() {
             <Suspense fallback={<p className="wrap loading">Chargement…</p>}>
               <Opportunities data={data} />
             </Suspense>
+            <Compliance data={data} />
+            <Method data={data} />
           </>
         )}
       </main>
