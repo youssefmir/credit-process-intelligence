@@ -15,14 +15,14 @@ from xml.sax.saxutils import escape
 
 from cpi.config import DOCS_DIR, SITE_BPMN_DIR
 
-LANE_H = 230
+LANE_H = 250
 POOL_LABEL = 30
 LANE_LABEL = 30
 COL_W = 170
 X0 = POOL_LABEL + LANE_LABEL + 90
 CLIENT_H = 70
 GAP = 30  # entre la piscine client et la piscine de l'établissement
-ROWS = (78, 168)  # centres des rangées dans un couloir (relatifs au haut du couloir)
+ROWS = (88, 180)  # centres des rangées dans un couloir (relatifs au haut du couloir)
 TOP_ROW = 22  # rangée haute (événements de boucle au-dessus de la rangée principale)
 
 SIZES = {
@@ -69,7 +69,7 @@ class Flow:
     source: str
     target: str
     name: str | None = None
-    route: str = "h"  # h | down | up | under | over | points
+    route: str = "h"  # h | down | up | under | over | left-down | points
     points: list[tuple[float, float]] | None = None
 
 
@@ -255,7 +255,7 @@ def build(s: dict[str, Any], tobe: bool) -> Model:
             "endEvent",
             "Refusée après examen",
             "L_back",
-            10 + f,
+            11 + f,
             row=1,
             style="decline",
         ),
@@ -270,7 +270,7 @@ def build(s: dict[str, Any], tobe: bool) -> Model:
         Flow("F09", "G_wait", "E_back"),
         Flow("F10", "G_wait", "E_timer", route="down"),
         Flow("F11", "G_wait", "E_new_offer", route="up"),
-        Flow("F12", "E_new_offer", "T_offer", route="over"),
+        Flow("F12", "E_new_offer", "T_offer", route="left-down"),
         Flow("F13", "E_timer", "T_followup"),
         Flow("F14", "T_followup", "G_expired"),
         Flow("F15", "G_expired", "E_cancel_expired", "oui"),
@@ -337,7 +337,7 @@ def build(s: dict[str, Any], tobe: bool) -> Model:
             f"{_pct(s.get('declined_share', 0))} des demandes refusées, le plus "
             "souvent en moins d'une heure",
             "E_declined_auto",
-            40,
+            70,
             -6,
         ),
         Annotation(
@@ -354,10 +354,10 @@ def build(s: dict[str, Any], tobe: bool) -> Model:
         Annotation(
             "A4",
             f"Boucle « dossier incomplet » : {_pct(inc)} des dossiers validés",
-            "T_missing",
-            80,
-            -10,
-            width=180,
+            "E_docs",
+            -270,
+            -28,
+            width=190,
             height=56,
         ),
     ]
@@ -368,8 +368,8 @@ def build(s: dict[str, Any], tobe: bool) -> Model:
                 "Pièces vérifiées dès le dépôt : moins de boucles « incomplet » "
                 "et d'appels de complétion (hypothèses chiffrées)",
                 "T_ai_check",
-                30,
-                58,
+                110,
+                -40,
                 width=230,
                 height=70,
             ),
@@ -387,8 +387,8 @@ def build(s: dict[str, Any], tobe: bool) -> Model:
                 "B3",
                 "Aucune décision automatisée : l'analyste relit la fiche, la corrige et décide",
                 "T_ai_brief",
-                -40,
-                66,
+                -500,
+                62,
                 width=220,
                 height=60,
             ),
@@ -400,8 +400,8 @@ def build(s: dict[str, Any], tobe: bool) -> Model:
                 f"Seuls {_pct(s.get('first_time_right_share', 0))} des prêts "
                 "approuvés suivent le chemin nominal sans reprise",
                 "E_activated",
-                -150,
-                58,
+                40,
+                44,
                 width=200,
                 height=64,
             )
@@ -419,7 +419,7 @@ def build(s: dict[str, Any], tobe: bool) -> Model:
         flows,
         messages,
         annotations,
-        columns=13 + f,
+        columns=14 + f,
     )
 
 
@@ -472,12 +472,16 @@ def route(f: Flow, a: Box, b: Box) -> list[tuple[float, float]]:
             return [(a.cx, a.y), (a.cx, b.cy), (b.x, b.cy)]
         return [(a.cx, a.y), (a.cx, b.cy), (b.right, b.cy)]
     if f.route == "under":
-        y = max(a.bottom, b.bottom) + 22
+        y = max(a.bottom, b.bottom) + 36
         return [(a.cx, a.bottom), (a.cx, y), (b.cx, y), (b.cx, b.bottom)]
+    if f.route == "left-down":
+        return [(a.x, a.cy), (b.cx, a.cy), (b.cx, b.y)]
     if f.route == "over":
         y = min(a.y, b.y) - 16
         return [(a.cx, a.y), (a.cx, y), (b.cx, y), (b.cx, b.y)]
     if abs(a.cy - b.cy) < 1:
+        if b.cx < a.cx:  # retour vers la gauche sur la même rangée
+            return [(a.x, a.cy), (b.right, b.cy)]
         return [(a.right, a.cy), (b.x, b.cy)]
     xm = (a.right + b.x) / 2
     return [(a.right, a.cy), (xm, a.cy), (xm, b.cy), (b.x, b.cy)]
@@ -565,7 +569,15 @@ def to_xml(model: Model) -> str:
         label = ""
         if n.kind.endswith("Event") or n.kind.endswith("Gateway"):
             lw = 110
-            ly = b.bottom + 6 if n.row != "top" else b.y - 34
+            # Étiquette au-dessus quand un flux part vers le bas (évite les chevauchements).
+            leaves_down = any(
+                f.source == n.id and f.route in ("down", "under") for f in model.flows
+            )
+            ly = (
+                b.y - 34
+                if n.row == "top" or (leaves_down and "Gateway" in n.kind)
+                else b.bottom + 6
+            )
             label = (
                 f'<bpmndi:BPMNLabel><dc:Bounds x="{b.cx - lw / 2:.0f}" y="{ly:.0f}" '
                 f'width="{lw}" height="27" /></bpmndi:BPMNLabel>'
@@ -575,9 +587,13 @@ def to_xml(model: Model) -> str:
         pts = route(f, boxes[f.source], boxes[f.target])
         label = ""
         if f.name:
-            x, y = pts[0]
+            (x0, y0), (x1, _y1) = pts[0], pts[1]
+            if abs(x0 - x1) < 1:  # premier segment vertical : étiquette à droite du trait
+                lx, ly = x0 + 6, y0 + (4 if _y1 > y0 else -18)
+            else:  # premier segment horizontal : étiquette au-dessus du trait
+                lx, ly = x0 + 8, y0 - 18
             label = (
-                f'<bpmndi:BPMNLabel><dc:Bounds x="{x + 6:.0f}" y="{y - 22:.0f}" '
+                f'<bpmndi:BPMNLabel><dc:Bounds x="{lx:.0f}" y="{ly:.0f}" '
                 'width="50" height="14" /></bpmndi:BPMNLabel>'
             )
         di.append(_edge(f"{f.id}_di", f.id, pts, label))
@@ -593,7 +609,15 @@ def to_xml(model: Model) -> str:
         t = boxes[a.target]
         box = Box(t.cx + a.dx, t.cy + a.dy, a.width, a.height)
         di.append(_shape(f"{a.id}_di", a.id, box))
-        di.append(_edge(f"{a.id}_assoc_di", f"{a.id}_assoc", [(t.cx, t.cy), (box.x, box.cy)], ""))
+        if box.y >= t.bottom:
+            end = (box.x + min(30.0, box.w / 2), box.y)
+        elif box.bottom <= t.y:
+            end = (box.x + min(30.0, box.w / 2), box.bottom)
+        elif box.x >= t.cx:
+            end = (box.x, box.cy)
+        else:
+            end = (box.right, box.cy)
+        di.append(_edge(f"{a.id}_assoc_di", f"{a.id}_assoc", [(t.cx, t.cy), end], ""))
 
     body = "".join(elements)
     return (
