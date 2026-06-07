@@ -90,7 +90,7 @@ export default function Opportunities({ data }: { data: AllData }) {
             max: edges[edges.length - 1],
             splitNumber: 3,
             splitLine: { show: false },
-            axisLabel: { ...axisCommon(p).axisLabel, formatter: (v: number) => keur(v) },
+            axisLabel: { ...axisCommon(p).axisLabel, formatter: (v: number) => keur(v), showMinLabel: false, showMaxLabel: false },
           };
         }),
         yAxis: ORDER.map((_, i) => ({ ...axisCommon(p), gridIndex: i, type: "value", min: 0, show: false })),
