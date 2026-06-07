@@ -1181,7 +1181,7 @@
 }
 
 .bpmn-canvas {
-  height: 470px;
+  height: 380px;
   border: 2px solid var(--rule-strong);
   background: #ffffff;
   color: #111111;

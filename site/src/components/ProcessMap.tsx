@@ -204,8 +204,13 @@ function Inner({ maps }: Props) {
       const zoom = Math.max(0.55, Math.min(1, (W - 24) / spanX));
       flow.setViewport({ x: (W - spanX * zoom) / 2 - minX * zoom, y: 16 - minY * zoom, zoom });
     } else {
-      const zoom = Math.max(0.55, Math.min(1, (H - 48) / spanY));
-      flow.setViewport({ x: 24 - minX * zoom, y: (H - spanY * zoom) / 2 - minY * zoom, zoom });
+      const zoom = Math.max(0.6, Math.min(1, (H - 48) / spanY));
+      // Centrer verticalement sur les stations visibles au départ (début du processus).
+      const visible = nodes.filter((n) => n.position.x < minX + (W - 48) / zoom);
+      const vy = visible.map((n) => n.position.y);
+      const top = Math.min(...vy);
+      const span = Math.max(...vy) - top + NODE_H;
+      flow.setViewport({ x: 24 - minX * zoom, y: (H - span * zoom) / 2 - top * zoom, zoom });
     }
   }, [nodes, vertical, flow]);
 
