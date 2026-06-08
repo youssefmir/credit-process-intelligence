@@ -8,6 +8,7 @@ pipeline met à jour les documents.
 from __future__ import annotations
 
 import json
+from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
 from typing import Any
 
@@ -24,8 +25,12 @@ def fr_num(x: float | int | None, digits: int = 0) -> str:
     """Nombre au format français : 13 087 ; 14,4."""
     if x is None:
         return "n.d."
-    s = f"{float(x):,.{digits}f}"
-    return s.replace(",", NBSP).replace(".", ",")
+    # Arrondi décimal « au plus proche, loin de zéro » sur la représentation la plus courte,
+    # comme Intl.NumberFormat dans le site : mêmes chiffres partout.
+    d = Decimal(repr(float(x))).quantize(Decimal(1).scaleb(-digits), rounding=ROUND_HALF_UP)
+    s = f"{d:,.{digits}f}"
+    s = s.replace(",", NBSP).replace(".", ",")
+    return "\u2212" + s[1:] if s.startswith("-") else s
 
 
 def fr_pct(x: float | None, digits: int = 0) -> str:
@@ -47,6 +52,42 @@ def fr_days(x: float | None, digits: int = 1) -> str:
     return "n.d." if x is None else f"{fr_num(x, digits)} j"
 
 
+MONTHS = (
+    "janvier",
+    "février",
+    "mars",
+    "avril",
+    "mai",
+    "juin",
+    "juillet",
+    "août",
+    "septembre",
+    "octobre",
+    "novembre",
+    "décembre",
+)
+
+
+def fr_date(iso: str) -> str:
+    """« 2011-10-01 » → « 1er octobre 2011 »."""
+    y, m, d = (int(v) for v in iso[:10].split("-"))
+    day = "1er" if d == 1 else str(d)
+    return f"{day} {MONTHS[m - 1]} {y}"
+
+
+def fr_hyp(value: float, unit: str) -> str:
+    """Valeur d'hypothèse formatée selon son unité."""
+    if unit.startswith("part"):
+        return fr_pct(value, 1 if abs(value * 100 - round(value * 100)) > 1e-9 else 0)
+    if unit in ("€", "€/an"):
+        return fr_eur(value, 0, "k") + ("/an" if unit == "€/an" else "")
+    if unit == "€/h":
+        return f"{fr_num(value)}\u00a0€/h"
+    if unit == "facteur":
+        return fr_num(value, 2)
+    return fr_num(value)
+
+
 def load_exports(folder: Path = SITE_DATA_DIR) -> dict[str, Any]:
     return {
         p.stem: json.loads(p.read_text(encoding="utf-8")) for p in sorted(folder.glob("*.json"))
@@ -62,7 +103,15 @@ def environment() -> Environment:
         lstrip_blocks=True,
     )
     env.filters.update(
-        {"num": fr_num, "pct": fr_pct, "eur": fr_eur, "days": fr_days, "label": labels.label}
+        {
+            "num": fr_num,
+            "pct": fr_pct,
+            "eur": fr_eur,
+            "days": fr_days,
+            "frdate": fr_date,
+            "hyp": fr_hyp,
+            "label": labels.label,
+        }
     )
     return env
 
