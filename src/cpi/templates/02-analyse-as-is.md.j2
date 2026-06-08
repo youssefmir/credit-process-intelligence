@@ -1,0 +1,167 @@
+# Analyse AS-IS — le processus de crédit tel qu'il se déroule
+
+> Document généré par `make docs` à partir des exports du pipeline (`site/public/data`). Aucun chiffre n'est saisi à la main.
+
+{% set appr = time.phases.approved_summary %}
+{% set inc = rework.incomplete %}
+## Synthèse
+
+| Constat | Valeur mesurée |
+|---|---|
+| Demandes analysées | {{ meta.counts.cases | num }} ({{ meta.counts.events | num }} événements) |
+| Issues | {{ summary.approved_share | pct }} approuvées, {{ summary.declined_share | pct }} refusées, {{ summary.cancelled_share | pct }} annulées |
+| Délai médian d'un prêt approuvé | {{ appr.median_lead_time_d | days }} (moyenne {{ appr.mean_lead_time_d | days }}) |
+| Travail effectif moyen par prêt approuvé | {{ appr.mean_work_h | num(2) }} h |
+| Efficacité de flux (travail ÷ délai) | {{ appr.flow_efficiency_aggregate | pct(2) }} |
+| Prêts approuvés sans aucune reprise | {{ process.conformance.first_time_right_share | pct }} |
+| Dossiers validés passés par une boucle « incomplet » | {{ inc.share_of_validated | pct }} |
+| Heures de relances et de reprises par an | {{ rework.total_rework_hours_annual | num }} h |
+| Offres envoyées finalement annulées | {{ abandon.cancel_rate_after_offer | pct }} |
+
+Lecture : le délai d'un dossier n'est presque jamais du travail. Il se passe à attendre le client (retour de l'offre signée) puis la file de validation. Le travail humain annuel est modeste ({{ time.resources.annualized_hours | num }} h par an, soit environ {{ (time.resources.annualized_hours / 1607) | num }} équivalents temps plein), alors que les abandons portent sur des milliers de dossiers : la valeur est davantage dans la conversion que dans la productivité.
+
+![Carte de processus du rapport interactif](img/carte-processus.png)
+
+*La carte de processus en mode performance : la durée médiane entre l'envoi de l'offre et son retour signé domine toutes les autres.*
+
+## 1. Données et qualité
+
+Source : {{ meta.dataset.citation }} {{ meta.dataset.doi }}. Période : {{ meta.window.first_submission | frdate }} → {{ meta.window.last_event | frdate }}. Volume annualisé : {{ meta.window.annualized_applications | num }} demandes par an (facteur {{ meta.window.annual_factor | num(2) }} : 365 jours rapportés aux {{ meta.window.submission_days | num }} jours de dépôts observés).
+
+| Contrôle | Statut | Résultat | Traitement |
+|---|---|---|---|
+{% for c in quality.checks %}
+| {{ c.label }} | {{ {"ok": "conforme", "attention": "traité", "info": "information"}[c.status] }} | {{ c.value }} | {{ c.treatment }} |
+{% endfor %}
+
+**Sessions de travail.** Le cycle de vie des tâches (planifiée, démarrée, terminée) permet de mesurer le travail effectif. Une session de plus de deux heures sur un appel ou un contrôle est considérée comme restée ouverte : {{ quality.session_cleaning.outliers | num }} sessions ({{ quality.session_cleaning.outlier_share | pct(2) }}) pèsent {{ quality.session_cleaning.hours_in_outliers_raw | num }} h sur {{ quality.session_cleaning.hours_raw | num }} h brutes. Leur durée est remplacée par la médiane de l'activité. Sensibilité au seuil :
+
+| Seuil de session non clôturée | Heures de travail retenues | Sessions imputées |
+|---|---|---|
+{% for t in quality.threshold_sensitivity %}
+| {{ t.threshold_h | num(1) }} h | {{ t.hours | num }} h | {{ t.share_imputed | pct(1) }} |
+{% endfor %}
+
+Le seuil de deux heures est un compromis prudent : il retient l'essentiel du travail réel sans compter les sessions oubliées.
+
+## 2. Q1 — Le parcours réel
+
+### Issues
+
+| Issue | Demandes | Part |
+|---|---|---|
+{% for o in process.outcomes %}
+| {{ o.label }} | {{ o.count | num }} | {{ o.share | pct(1) }} |
+{% endfor %}
+
+### Variantes
+
+Une variante est une séquence distincte d'étapes. Sur les jalons de la demande et de l'offre, on compte {{ variants.milestones.n_variants | num }} variantes ; les 5 premières couvrent {{ variants.milestones.coverage_top["5"] | pct }} des dossiers, les 10 premières {{ variants.milestones.coverage_top["10"] | pct }}. Avec les tâches humaines (répétitions regroupées), on en compte {{ variants.complete.n_variants | num }}.
+
+| Rang | Dossiers | Part | Issue majoritaire | Délai médian | Parcours (jalons) |
+|---|---|---|---|---|---|
+{% for v in variants.milestones.variants[:8] %}
+{% set oc = v.outcomes | dictsort(by="value", reverse=true) %}
+| {{ v.rank }} | {{ v.count | num }} | {{ v.share | pct(1) }} | {{ labels.outcomes[oc[0][0]] }} | {{ v.median_lead_time_d | days if v.median_lead_time_d is not none else "—" }} | {{ v.activities | map("label") | join(" → ") }} |
+{% endfor %}
+
+### Conformité au chemin nominal
+
+Le chemin nominal d'un prêt approuvé compte {{ process.conformance.nominal_path | length }} jalons, une seule offre et aucune reprise. L'alignement de chaque dossier approuvé sur ce chemin (pm4py) donne :
+
+- {{ process.conformance.perfect_share | pct }} des prêts approuvés suivent exactement les jalons nominaux (fitness moyenne {{ process.conformance.mean_fitness | num(2) }}) ;
+- {{ process.conformance.first_time_right_share | pct }} les suivent sans boucle « dossier incomplet » ;
+- délai médian : {{ process.conformance.median_lead_time_nominal_d | days }} pour ces dossiers, {{ process.conformance.median_lead_time_deviating_d | days }} pour les autres ;
+- écarts les plus fréquents : {% for m in process.conformance.extra_moves[:4] %}{{ m.label | lower }} en trop ({{ m.count | num }}){{ ", " if not loop.last else "." }}{% endfor %}
+
+
+### Modèle découvert automatiquement
+
+{{ process.inductive.algorithm }} : fitness {{ process.inductive.fitness | num(3) }} ({{ process.inductive.fitting_traces_share | pct }} des dossiers parfaitement rejoués), précision {{ process.inductive.precision | num(3) }}. Le modèle explique presque tout ce qui arrive, mais autorise bien plus de parcours qu'il n'en existe : la variabilité réelle impose une lecture par variantes et un BPMN métier simplifié (voir [la modélisation BPMN](03-modelisation-bpmn.md)).
+
+## 3. Q2 — Combien de temps, et où se perd-il ?
+
+### Délais jusqu'à l'issue
+
+| Issue | P25 | Médiane | P75 | P90 | Moyenne |
+|---|---|---|---|---|---|
+{% for k, name in [("approved", "Approuvées"), ("cancelled", "Annulées"), ("declined", "Refusées")] %}
+{% set q = time.lead_times.by_outcome[k].quantiles %}
+| {{ name }} | {{ q.p25 | days }} | {{ q.p50 | days }} | {{ q.p75 | days }} | {{ q.p90 | days }} | {{ q.mean | days }} |
+{% endfor %}
+
+{{ time.lead_times.by_outcome.declined.within_1h_share | pct }} des refus tombent en moins d'une heure : le pré-contrôle automatique écarte la majorité des demandes refusées.
+
+### Attente contre travail (prêts approuvés)
+
+| Phase | Délai moyen | Délai médian | Travail moyen |
+|---|---|---|---|
+{% for p in time.phases.approved %}
+| {{ p.label }} | {{ p.mean_elapsed_d | days(2) }} | {{ p.median_elapsed_d | days(2) }} | {{ (p.mean_work_h * 60) | num }} min |
+{% endfor %}
+
+Efficacité de flux : {{ time.flow_efficiency.approved.aggregate | pct(2) }} pour les prêts approuvés, {{ time.flow_efficiency.cancelled.aggregate | pct(2) }} pour les dossiers annulés.
+
+### Tâches humaines
+
+| Tâche | Sessions | Dossiers | Sessions par dossier | Session médiane | Attente médiane en file | Heures observées |
+|---|---|---|---|---|---|---|
+{% for a in time.activities %}
+| {{ a.label }} | {{ a.sessions | num }} | {{ a.cases | num }} | {{ a.sessions_per_case | num(1) }} | {{ a.median_session_min | num(1) }} min | {{ a.median_wait_h | num(1) }} h | {{ a.work_h | num }} h |
+{% endfor %}
+
+La validation concentre la plus longue attente en file (médiane {{ (time.activities | selectattr("activity", "equalto", "W_Valideren aanvraag") | first).median_wait_h | num(1) }} h) et les sessions les plus longues ; les relances d'offres sont nombreuses mais courtes.
+
+### Où s'accumule le temps
+
+| Transition (jalons) | Passages | Durée médiane | Part du temps cumulé |
+|---|---|---|---|
+{% for b in time.bottlenecks[:6] %}
+| {{ b.source_label }} → {{ b.target_label }} | {{ b.count | num }} | {{ (b.median_h / 24) | days }} | {{ b.share_of_time | pct }} |
+{% endfor %}
+
+### Charge
+
+{{ time.resources.resources_with_work }} collaborateurs (identifiants pseudonymisés) réalisent des sessions de travail. Les 10 plus chargés réalisent {{ time.resources.top10_share | pct }} des heures (indice de Gini {{ time.resources.gini | num(2) }}) ; {{ time.resources.specialists_share | pct }} consacrent au moins 80 % de leur temps à une seule tâche. Ces données servent au dimensionnement collectif, jamais à une évaluation individuelle.
+
+## 4. Q3 — Le coût des allers-retours
+
+| Boucle | Volume | Travail | Délai |
+|---|---|---|---|
+| Dossier incomplet (relance pour pièces, puis re-validation) | {{ inc.cases | num }} dossiers ({{ inc.share_of_validated | pct }} des dossiers validés), {{ inc.calls | num }} appels | {{ inc.call_hours | num }} h d'appels + {{ inc.revalidation_hours | num }} h de re-validation, soit {{ inc.loop_hours_annual | num }} h par an | médiane {{ inc.median_loop_delay_d | days }}, moyenne {{ inc.mean_loop_delay_d | days }} |
+| Offres multiples | {{ rework.multiple_offers.cases | num }} dossiers ({{ rework.multiple_offers.share_of_offered | pct }} des dossiers ayant reçu une offre), {{ rework.multiple_offers.extra_offers | num }} offres en plus | {{ rework.multiple_offers.hours_after_second_offer_annual | num }} h par an de relances après une 2e offre | {{ rework.multiple_offers.median_span_d | days }} entre première et dernière offre |
+| Relances d'offres | {{ rework.offer_follow_ups.calls | num }} appels sur {{ rework.offer_follow_ups.cases | num }} dossiers | {{ rework.offer_follow_ups.hours_annual | num }} h par an, dont {{ rework.offer_follow_ups.share_hours_on_cancelled | pct }} sur des dossiers finalement annulés | retour médian de l'offre signée : {{ rework.offer_follow_ups.median_return_d | days }} |
+
+Délai médian des prêts approuvés : {{ inc.median_lead_time_approved_with_d | days }} avec une boucle « incomplet », {{ inc.median_lead_time_approved_without_d | days }} sans. Les dossiers annulés reçoivent en moyenne {{ rework.offer_follow_ups.mean_calls_by_outcome.cancelled | num(1) }} appels de relance, contre {{ rework.offer_follow_ups.mean_calls_by_outcome.approved | num(1) }} pour les dossiers approuvés.
+
+## 5. Q4 — Qui abandonne, quand, et pourquoi
+
+{{ abandon.cancelled | num }} dossiers sont annulés ({{ abandon.share_of_closed | pct }} des dossiers clos). Parmi les dossiers ayant reçu une offre, {{ abandon.cancel_rate_after_offer | pct }} finissent annulés et {{ abandon.approval_rate_after_offer | pct }} approuvés.
+
+| Étape d'annulation | Dossiers | Part | Délai médian depuis le dépôt |
+|---|---|---|---|
+{% for s in abandon.by_stage %}
+| {{ s.label }} | {{ s.cancelled | num }} | {{ s.share | pct(1) }} | {{ s.median_days_from_submission | days if s.median_days_from_submission is not none else "—" }} |
+{% endfor %}
+
+**L'expiration de l'offre.** {{ abandon.after_offer.expiry_window_share | pct }} des annulations postérieures à une offre surviennent entre 29 et 32 jours après la dernière offre : le client ne l'a jamais renvoyée et le dossier est clos à l'expiration.
+
+**Le délai avant la première offre.** Le taux d'annulation croît avec ce délai :
+
+| Délai dépôt → 1re offre | Dossiers | Taux d'annulation |
+|---|---|---|
+{% for r in abandon.by_delay_to_offer %}
+| {{ r.band }} | {{ r.cases | num }} | {{ r.cancel_rate | pct(1) }} |
+{% endfor %}
+
+**Le montant.** Montant médian demandé : {{ abandon.median_amount_by_outcome.approved | eur }} pour les prêts approuvés, {{ abandon.median_amount_by_outcome.cancelled | eur }} pour les dossiers annulés, {{ abandon.median_amount_by_outcome.declined | eur }} pour les refus. Les petits montants (moins de 5 k€) ayant reçu une offre sont les plus souvent annulés ({{ (abandon.by_amount_offered | first).cancel_rate | pct }}).
+
+Le « pourquoi » reste une inférence : le journal ne contient pas de motif. Les signaux convergent vers un client qui ne revient pas (offre non renvoyée), d'autant plus que le processus est long.
+
+## Annexe — Table de traduction des activités
+
+| Code du journal | Libellé | Type | Description |
+|---|---|---|---|
+{% for a in labels.activities %}
+| `{{ a.code }}` | {{ a.label }} | {{ a.category_label }} | {{ a.description }} |
+{% endfor %}
