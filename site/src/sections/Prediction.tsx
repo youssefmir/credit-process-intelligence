@@ -298,8 +298,9 @@ export default function Prediction({ data }: { data: AllData }) {
               <span className={`tag ${acc.deployable ? "ok" : "ko"}`}>{acc.deployable ? "Déployable" : "Non déployable"}</span>
             </p>
             <p className="small muted">
-              Bien calibré et stable, mais pas assez discriminant : le signal n'est pas dans les traces. Ajouter
-              l'identifiant du conseiller n'améliore rien et poserait un problème d'évaluation individuelle.
+              Bien calibré et stable, mais pas assez discriminant : le signal n'est pas dans les traces. L'identifiant
+              du conseiller est exclu : seul, il ne prédit rien (ROC-AUC {num(m.resource_ablation.resource_only, 2)}), et l'utiliser
+              reviendrait à évaluer les salariés.
             </p>
           </div>
         </Reveal>

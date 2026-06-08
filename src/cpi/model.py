@@ -468,6 +468,36 @@ def horizon_study(
     return rows
 
 
+def resource_ablation(dataset: pd.DataFrame, split: Split, events: pd.DataFrame) -> dict:
+    """Contrôle éthique : l'identifiant du conseiller apporterait-il du signal ?
+
+    On ajoute le conseiller qui a envoyé la 1re offre (variable catégorielle) et on compare
+    les ROC-AUC sur la période de test. La variable n'est jamais retenue dans le modèle.
+    """
+    sent = events[events["activity"] == "O_SENT"].sort_values(["case_id", "order"])
+    first = sent.groupby("case_id")["resource"].first().astype(str)
+    cats = pd.CategoricalDtype(sorted(set(first.reindex(split.train.index).dropna())))
+
+    def with_res(df: pd.DataFrame) -> pd.DataFrame:
+        out = df[FEATURE_NAMES].copy()
+        out["resource"] = first.reindex(df.index).astype(cats)
+        return out
+
+    params = {"num_leaves": 7, "min_child_samples": 40, "n_estimators": 100}
+    y_tr, y_te = split.train["label"], split.test["label"].to_numpy()
+    res: dict[str, float] = {}
+    for name, cols in (("with_resource", None), ("resource_only", ["resource"])):
+        x_tr, x_te = with_res(split.train), with_res(split.test)
+        if cols:
+            x_tr, x_te = x_tr[cols], x_te[cols]
+        gbm = make_gbm(params).fit(x_tr, y_tr)
+        res[name] = round(float(roc_auc_score(y_te, np.asarray(gbm.predict_proba(x_te))[:, 1])), 4)
+    base = make_gbm(params).fit(split.train[FEATURE_NAMES], y_tr)
+    p_base = np.asarray(base.predict_proba(split.test[FEATURE_NAMES]))[:, 1]
+    res["without_resource"] = round(float(roc_auc_score(y_te, p_base)), 4)
+    return res
+
+
 def alternative_split_metrics(dataset: pd.DataFrame, split: Split, trained: Trained) -> dict:
     """Contrôle : découpage temporel simple (sans purge ni zone tampon)."""
     simple = dataset[(dataset["t_dec"] >= TRAIN_START) & (dataset["t_dec"] < TEST_START)]
@@ -488,6 +518,7 @@ def run(
     results = evaluate(split, trained)
     results["alternative_split"] = alternative_split_metrics(dataset, split, trained)
     results["horizons"] = horizon_study(dataset, events, sessions, cases)
+    results["resource_ablation"] = resource_ablation(dataset, split, events)
     results["selection"] = {
         "logreg_c": trained.logreg_c,
         "gbm_params": trained.gbm_params,
