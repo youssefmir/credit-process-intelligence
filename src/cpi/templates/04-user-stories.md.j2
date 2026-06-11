@@ -1,0 +1,168 @@
+# User stories et critères d'acceptation
+
+> Document généré par `make docs` : les valeurs de référence citées viennent des exports du pipeline.
+
+## Conventions
+
+- Format : « En tant que …, je veux …, afin de … », stories conformes à INVEST (indépendantes, négociables, porteuses de valeur, estimables, petites, testables).
+- Priorité MoSCoW : **M** (indispensable), **S** (important), **C** (souhaitable), **W** (pas dans cette version).
+- Estimation en points relatifs (suite de Fibonacci), à recalibrer avec l'équipe.
+- Critères d'acceptation en Gherkin (Étant donné, Quand, Alors), testables en recette (voir [le plan de recette](07-plan-de-recette.md)).
+
+## Vue d'ensemble
+
+| Épopée | Valeur visée | Référence mesurée | Priorité |
+|---|---|---|---|
+| E1 — Contrôle de complétude au dépôt | Moins de boucles « dossier incomplet » et d'appels de complétion | {{ rework.incomplete.share_of_validated | pct }} des dossiers validés passent par la boucle ; {{ rework.incomplete.loop_hours_annual | num }} h par an | M |
+| E2 — Relances d'offres priorisées (pilote) | Récupérer une partie des offres non renvoyées | {{ abandon.cancel_rate_after_offer | pct }} des offres envoyées finissent annulées | S |
+| E3 — Pré-analyse assistée des dossiers | Moins de temps de préparation de la validation | {{ (time.activities | selectattr("activity", "equalto", "W_Valideren aanvraag") | first).work_h | num }} h de validation observées en 5 mois | C |
+| E4 — Pilotage, conformité et supervision | Mesurer, prouver et maîtriser | Exigences AI Act, RGPD et CCD2 | M |
+
+## E1 — Contrôle de complétude au dépôt
+
+**US-01 — Liste des pièces attendues (M, 3 points)**
+En tant que client, je veux connaître dès le dépôt la liste exacte des pièces attendues pour ma situation, afin de compléter ma demande en une seule fois.
+
+```gherkin
+Étant donné une demande de prêt personnel de 15 000 € déposée en ligne
+Quand le client arrive à l'étape « pièces justificatives »
+Alors la liste des pièces attendues s'affiche avec un exemple pour chacune
+Et la liste dépend du type de demande et de la situation déclarée
+```
+
+**US-02 — Contrôle automatique des pièces déposées (M, 8 points)**
+En tant que client, je veux savoir immédiatement si une pièce est illisible, périmée ou incomplète, afin de la remplacer avant l'envoi.
+
+```gherkin
+Étant donné une pièce d'identité expirée déposée par le client
+Quand le contrôle de complétude s'exécute
+Alors le client voit « pièce d'identité expirée » et peut déposer une nouvelle pièce
+Et aucune demande n'est refusée par le contrôle
+Et le résultat du contrôle est journalisé avec la version du modèle utilisé
+```
+
+**US-03 — Reprise par un conseiller (M, 3 points)**
+En tant que conseiller du centre de contact, je veux voir les alertes de complétude d'un dossier et pouvoir les lever, afin de corriger une erreur du contrôle.
+
+```gherkin
+Étant donné une alerte « justificatif de revenus manquant » sur un dossier
+Quand le conseiller constate que la pièce est présente et lève l'alerte
+Alors l'alerte est close avec le motif saisi
+Et le cas est ajouté à l'échantillon de contrôle qualité du modèle
+```
+
+**US-04 — Appels de complétion ciblés (S, 5 points)**
+En tant que conseiller, je veux que la tâche de complétion n'affiche que les manques restants, afin d'écourter l'appel.
+
+```gherkin
+Étant donné un dossier dont toutes les pièces ont été validées au dépôt
+Quand la tâche « Compléter la demande » est créée
+Alors elle ne contient que les informations encore manquantes
+```
+
+**US-05 — Mesure de l'effet (M, 3 points)**
+En tant que responsable du back-office, je veux suivre chaque semaine le taux de dossiers validés passant par une boucle « incomplet », afin de vérifier le gain annoncé.
+
+```gherkin
+Étant donné la référence mesurée avant projet ({{ rework.incomplete.share_of_validated | pct }} des dossiers validés)
+Quand le tableau de bord hebdomadaire est publié
+Alors il affiche le taux de la semaine, la référence et la cible (-40 % de boucles, hypothèse centrale)
+```
+
+## E2 — Relances d'offres priorisées (pilote)
+
+**US-06 — File de relance triée (S, 5 points)**
+En tant que conseiller, je veux que ma file de relance d'offres soit triée par priorité, afin d'appeler d'abord les clients les plus susceptibles d'abandonner.
+
+```gherkin
+Étant donné 40 offres envoyées en attente de retour
+Quand le conseiller ouvre sa file de relance
+Alors les offres du groupe test apparaissent triées par priorité décroissante
+Et la priorité n'est jamais visible des équipes d'octroi ni utilisée dans la décision
+```
+
+**US-07 — Pilote A/B sur une règle simple (M, 5 points)**
+En tant que responsable du centre de contact, je veux comparer une relance renforcée ciblée à la pratique actuelle sur deux groupes tirés au sort, afin de mesurer le vrai taux de récupération avant tout investissement.
+
+```gherkin
+Étant donné les offres envoyées pendant 8 semaines, réparties au hasard en deux groupes
+Quand le groupe test reçoit la relance renforcée et le groupe témoin la pratique actuelle
+Alors le rapport compare les taux d'annulation des deux groupes avec un intervalle de confiance
+Et la décision d'industrialiser n'est prise que si l'écart est significatif
+```
+
+Repère : le business case passe à l'équilibre pour un taux de récupération de {{ business_case.opportunities.prioritization.break_even_recovery_rate | pct(1) }} des abandons ciblés.
+
+**US-08 — Seuils de mise en production du score (M, 2 points)**
+En tant que responsable des risques, je veux que le score ne soit activé que s'il dépasse des seuils fixés à l'avance, afin d'éviter un outil inutile ou trompeur.
+
+```gherkin
+Étant donné les seuils ROC-AUC ≥ 0,65 et lift à 20 % ≥ 1,5 sur une période de test postérieure à l'apprentissage
+Quand le modèle obtient une ROC-AUC de {{ model.models.gbm.metrics.roc_auc | num(3) }}
+Alors le score n'est pas activé et la file reste triée par la règle du pilote
+```
+
+## E3 — Pré-analyse assistée des dossiers
+
+**US-09 — Fiche factuelle du dossier (C, 8 points)**
+En tant qu'analyste de validation, je veux une fiche qui résume la chronologie du dossier, les pièces reçues et les points d'attention, afin de préparer ma décision plus vite.
+
+```gherkin
+Étant donné un dossier avec deux offres successives et seize relances pour pièces
+Quand l'analyste ouvre la tâche de validation
+Alors la fiche affiche la chronologie, le nombre d'offres et les relances
+Et chaque point de la fiche renvoie à sa source (événement ou pièce)
+Et la fiche ne contient aucune appréciation de solvabilité
+```
+
+**US-10 — Correction et traçabilité (C, 3 points)**
+En tant qu'analyste, je veux corriger la fiche et que mes corrections soient conservées, afin que la décision repose sur des faits vérifiés.
+
+```gherkin
+Étant donné une fiche dont un montant est mal extrait
+Quand l'analyste corrige le montant
+Alors la valeur corrigée remplace la valeur extraite dans le dossier
+Et l'écart est enregistré pour l'évaluation de la qualité de l'outil
+```
+
+**US-11 — Rédaction par un modèle de langage (W, 5 points)**
+En tant qu'analyste, je veux un brouillon rédigé de la note de synthèse, afin de gagner du temps de rédaction. *Reporté : à reconsidérer après la qualification AI Act (voir [la conformité](06-conformite-ia-rgpd.md)).*
+
+## E4 — Pilotage, conformité et supervision
+
+**US-12 — Analyse d'impact (M, 5 points)**
+En tant que délégué à la protection des données, je veux une analyse d'impact (AIPD) pour chaque traitement de profilage ou de lecture de pièces, afin de documenter la conformité avant la mise en service.
+
+```gherkin
+Étant donné le projet de file de relance priorisée
+Quand l'AIPD est instruite
+Alors elle décrit la finalité, la base légale, la mise en balance, l'information des clients et le droit d'opposition
+Et la mise en service est bloquée tant que l'AIPD n'est pas validée
+```
+
+**US-13 — Supervision des dérives (M, 3 points)**
+En tant que responsable data, je veux une alerte quand la distribution du score ou des variables dérive, afin de recalibrer ou de suspendre le modèle.
+
+```gherkin
+Étant donné un indice de stabilité (PSI) mesuré chaque mois sur le score
+Quand le PSI dépasse 0,2
+Alors une alerte est émise et le modèle passe en revue
+```
+
+**US-14 — Registre des usages (S, 2 points)**
+En tant que responsable conformité, je veux un registre des systèmes d'IA avec leur qualification AI Act, afin de piloter les échéances (obligations haut risque de l'annexe III au 2 décembre 2027).
+
+```gherkin
+Étant donné les trois cas d'usage du programme
+Quand le registre est consulté
+Alors chaque cas affiche sa qualification, son responsable, sa date de revue et ses garde-fous
+```
+
+## Récapitulatif MoSCoW
+
+| Priorité | Stories | Points |
+|---|---|---|
+| M (indispensable) | US-01, US-02, US-03, US-05, US-07, US-08, US-12, US-13 | 32 |
+| S (important) | US-04, US-06, US-14 | 12 |
+| C (souhaitable) | US-09, US-10 | 11 |
+| W (pas dans cette version) | US-11 | 5 |
