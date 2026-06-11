@@ -1,0 +1,111 @@
+# Business case — trois opportunités IA
+
+> Document généré par `make docs`. Les valeurs de référence sont mesurées dans le journal ; les hypothèses viennent de [`config/hypotheses.yaml`](../config/hypotheses.yaml) et sont modifiables dans le simulateur du rapport.
+
+{% set bc = business_case %}
+{% set opps = [("completeness", bc.opportunities.completeness), ("prioritization", bc.opportunities.prioritization), ("preanalysis", bc.opportunities.preanalysis)] %}
+## Résumé
+
+| Opportunité | Gain annuel (médiane) | VAN 3 ans P10 / P50 / P90 | P(VAN > 0) | Retour (central) | Recommandation |
+|---|---|---|---|---|---|
+{% for key, o in opps %}
+| {{ o.title }} | {{ o.monte_carlo.annual_benefit.p50 | eur(0, "k") }} | {{ o.monte_carlo.npv.p10 | eur(0, "k") }} / **{{ o.monte_carlo.npv.p50 | eur(0, "k") }}** / {{ o.monte_carlo.npv.p90 | eur(0, "k") }} | {{ o.monte_carlo.prob_npv_positive | pct }} | {{ (o.central.payback_month | string) + " mois" if o.central.payback_month else "au-delà de 36 mois" }} | {{ {"completeness": "Lancer", "prioritization": "Pilote A/B d'abord", "preanalysis": "Différer"}[key] }} |
+{% endfor %}
+
+Le contrôle de complétude est la seule opportunité rentable dans la grande majorité des scénarios. La priorisation des relances dépend d'un taux de récupération inconnu : elle se teste par un pilote peu coûteux, sans score d'IA à ce stade. La pré-analyse assistée ne se justifie pas à ce volume par la seule productivité.
+
+## Méthode
+
+1. **Valeurs de référence mesurées** : volumes, heures et taux sont calculés sur les {{ meta.counts.cases | num }} demandes, puis annualisés (facteur {{ meta.window.annual_factor | num(2) }} : 365 jours rapportés aux {{ meta.window.submission_days | num }} jours de dépôts observés).
+2. **Rejeu contrefactuel** : pour le contrôle de complétude, chaque boucle « dossier incomplet » réelle est évitée ou non (tirage de Bernoulli) ; on retire ses heures réelles et, pour un prêt approuvé, son délai réel. Les autres leviers sont appliqués en espérance.
+3. **Monte Carlo** : {{ bc.hypotheses.simulation.iterations | num }} tirages ; chaque hypothèse suit une loi triangulaire (minimum, mode, maximum). Graine fixe : résultats reproductibles.
+4. **Flux de trésorerie mensuels sur {{ bc.hypotheses.simulation.horizon_months }} mois** : coût de construction étalé sur la durée du projet, puis bénéfices en montée en charge linéaire sur {{ bc.hypotheses.simulation.ramp_up_months }} mois, coûts de fonctionnement dès la mise en service. VAN au taux d'actualisation retenu ; retour sur investissement : premier mois où le cumul redevient positif.
+5. **Valorisation** : heures libérées × coût horaire complet (capacité redéployable, pas forcément une économie de trésorerie) ; prêts supplémentaires × montant moyen approuvé × marge nette actualisée.
+
+Les formules déterministes sont reproduites à l'identique dans le simulateur du rapport ; un test croisé compare les deux implémentations sur {{ bc.reference_scenarios | length }} scénarios.
+
+## Valeurs de référence mesurées
+
+| Mesure (sur la période observée) | Valeur |
+|---|---|
+| Dossiers passés par une boucle « dossier incomplet » | {{ bc.baseline.loop_cases | num }} |
+| Heures de ces boucles (appels et re-validations) | {{ bc.baseline.loop_hours | num }} h |
+| Heures d'appels de complétion | {{ bc.baseline.completion_hours | num }} h |
+| Heures de validation | {{ bc.baseline.validation_hours | num }} h |
+| Écart de taux d'annulation des dossiers validés avec et sans boucle | {{ bc.baseline.loop_cancel_gap | pct(1) }} |
+| Taux d'approbation des offres retournées | {{ bc.baseline.approval_given_returned | pct(1) }} |
+| Montant moyen des prêts approuvés | {{ bc.baseline.mean_amount_approved | eur }} |
+| Annulations après l'envoi d'une offre | {{ bc.baseline.abandons_after_offer | num }} |
+| Dossiers ayant reçu une offre | {{ bc.baseline.offered_cases | num }} |
+| Abandons couverts en appelant 20 % des dossiers (modèle, période de test) | {{ bc.baseline.recall_at_target | pct(1) }} |
+| Durée médiane d'un appel de relance | {{ bc.baseline.median_offer_call_min | num(1) }} min |
+| Délai médian des prêts approuvés | {{ bc.baseline.median_lead_time_approved_d | days }} |
+
+## Hypothèses
+
+| Hypothèse | Min | Mode | Max | Justification |
+|---|---|---|---|---|
+{% for k, h in bc.hypotheses.common.items() %}
+| {{ h.label }} | {{ h.min | hyp(h.unit) }} | {{ h.mode | hyp(h.unit) }} | {{ h.max | hyp(h.unit) }} | {{ h.justification }} |
+{% endfor %}
+{% for key, o in opps %}
+{% set spec = bc.hypotheses.opportunities[key] %}
+{% for k, h in spec.items() if h is mapping and h.label is defined %}
+| {{ o.short }} — {{ h.label }} | {{ h.min | hyp(h.unit) }} | {{ h.mode | hyp(h.unit) }} | {{ h.max | hyp(h.unit) }} | {{ h.justification }} |
+{% endfor %}
+{% endfor %}
+
+Sources des ordres de grandeur de productivité de l'IA générative : Brynjolfsson, Li et Raymond, *Generative AI at Work*, NBER Working Paper 31161 (2023), +14 % de demandes résolues par heure ; Noy et Zhang, *Science* 381 (2023), −40 % de temps sur des tâches de rédaction ; Dell'Acqua et al., *Navigating the Jagged Technological Frontier*, Harvard Business School Working Paper 24-013 (2023), tâches réalisées 25 % plus vite.
+{% if bc.calibration.available %}
+
+Étalonnage de la marge : sur les {{ bc.calibration.selected_offers | num }} offres retenues du BPI Challenge 2017 – Offer log (même établissement, 2016 ; van Dongen, 2017, 4TU.ResearchData, https://doi.org/10.4121/uuid:7e326e7e-8b93-4701-8860-71213edf0fbe), le taux annuel implicite médian est de {{ bc.calibration.apr.p50 | pct(1) }}, la durée médiane de {{ bc.calibration.terms_months.p50 | num }} mois et les intérêts bruts représentent {{ bc.calibration.gross_interest_ratio.p50 | pct }} du montant (médiane). La marge nette retenue en est environ le quart.
+{% endif %}
+
+## Résultats par opportunité
+
+{% for key, o in opps %}
+### {{ o.title }}
+
+| Indicateur (scénario central, régime de croisière) | Valeur |
+|---|---|
+| Heures libérées par an | {{ o.central.hours | num }} h ({{ o.central.fte | num(1) }} ETP) |
+| Prêts supplémentaires par an | {{ o.central.loans | num(1) }} |
+| Capacité libérée valorisée | {{ o.central.capacity_eur | eur(0, "k") }} |
+| Marge sur prêts supplémentaires | {{ o.central.conversion_eur | eur(0, "k") }} |
+| Coût des appels supplémentaires | {{ o.central.extra_cost_eur | eur(0, "k") }} |
+| Bénéfice annuel | {{ o.central.benefit_eur | eur(0, "k") }} |
+| VAN sur 36 mois | {{ o.central.npv | eur(0, "k") }} |
+| Retour sur investissement | {{ (o.central.payback_month | string) + " mois" if o.central.payback_month else "au-delà de 36 mois" }} |
+
+Monte Carlo : VAN médiane {{ o.monte_carlo.npv.p50 | eur(0, "k") }} (P10 {{ o.monte_carlo.npv.p10 | eur(0, "k") }}, P90 {{ o.monte_carlo.npv.p90 | eur(0, "k") }}), positive dans {{ o.monte_carlo.prob_npv_positive | pct }} des tirages.{% if o.monte_carlo.median_lead_time_approved_after_d is defined %} Délai médian des prêts approuvés après rejeu : {{ o.monte_carlo.median_lead_time_approved_after_d.p50 | days }} (contre {{ bc.baseline.median_lead_time_approved_d | days }}).{% endif %}
+
+
+Hypothèses les plus influentes (VAN quand l'hypothèse passe de son minimum à son maximum) :
+
+| Hypothèse | VAN au minimum | VAN au maximum |
+|---|---|---|
+{% for t in o.tornado[:4] %}
+| {{ t.label }} | {{ t.npv_low | eur(0, "k") }} | {{ t.npv_high | eur(0, "k") }} |
+{% endfor %}
+{% if key == "prioritization" %}
+
+Lecture : la VAN s'annule pour un taux de récupération de {{ o.break_even_recovery_rate | pct(1) }} (hypothèse centrale {{ bc.hypotheses.opportunities.prioritization.recovery_rate.mode | pct }}) ou une couverture des abandons de {{ o.break_even_recall | pct(1) }} à 20 % des dossiers appelés (mesurée : {{ bc.baseline.recall_at_target | pct(1) }}). Un ciblage au hasard donnerait une VAN de {{ o.random_targeting_npv | eur(0, "k") }} : le score n'apporte qu'une petite part du gain, qui dépend surtout de l'efficacité de la relance elle-même.
+{% endif %}
+
+{% endfor %}
+## Portefeuille et interactions
+
+La pré-analyse s'appliquerait aux heures de validation restantes après le contrôle de complétude (les re-validations évitées ne sont pas comptées deux fois) : {{ bc.portfolio.validation_hours_remaining_after_completeness | num }} h observées au lieu de {{ bc.baseline.validation_hours | num }} h, soit une VAN centrale de {{ bc.portfolio.preanalysis_npv_after_completeness | eur(0, "k") }}. Lancer les trois opportunités ensemble donnerait une VAN centrale de {{ bc.portfolio.total_npv_central | eur(0, "k") }} : le portefeuille n'a de sens que s'il est séquencé.
+
+## Recommandation
+
+1. **Lancer le contrôle de complétude** (construction en {{ bc.opportunities.completeness.build_months }} mois), avec un suivi hebdomadaire du taux de boucles « incomplet ».
+2. **Piloter la relance renforcée** sur une règle simple (délai avant offre, montant) en A/B pendant 8 semaines, avant tout développement de score.
+3. **Différer la pré-analyse assistée** : la réévaluer une fois le socle de lecture documentaire de la complétude en service (coûts mutualisés) et avant l'échéance des obligations haut risque de l'AI Act (2 décembre 2027).
+
+## Limites
+
+- Cinq mois observés : la saisonnalité est encadrée par un facteur de volume (−15 % à +10 %), pas mesurée.
+- Les coûts de construction et de fonctionnement sont des ordres de grandeur à remplacer par des devis.
+- L'effet des boucles sur les annulations est observationnel : seule une part causale (hypothèse) est retenue.
+- Les heures libérées ne deviennent une économie que si la capacité est redéployée ou absorbe une croissance.

@@ -41,7 +41,7 @@ common:
     max: 1.10
     justification: >-
       Le journal couvre 5 mois (octobre à février) ; la saisonnalité sur 12 mois est
-      inconnue. On encadre le volume annualisé de -15 % à +10 % (prudence à la hausse).
+      inconnue. On encadre le volume annualisé de −15 % à +10 % (prudence à la hausse).
   adoption:
     label: Taux d'adoption en régime de croisière
     unit: part
@@ -58,11 +58,11 @@ common:
     mode: 0.05
     max: 0.08
     justification: >-
-      Les 42 995 offres du BPI Challenge 2017 (même établissement, 2016) impliquent des
-      intérêts bruts médians d'environ 18 % du montant sur la durée du prêt (taux annuel
-      implicite médian proche de 5 %, durée médiane proche de 80 mois). Après coût de
-      refinancement, coût du risque et frais de gestion, on retient environ un quart à un
-      tiers des intérêts bruts.
+      Les offres retenues (attribut « Selected ») du BPI Challenge 2017 (21 768 sur 42 995,
+      même établissement, 2016) impliquent des intérêts bruts médians d'environ 18 % du
+      montant sur la durée du prêt (taux annuel implicite médian proche de 5 %, durée
+      médiane de 80 mois). Après coût de refinancement, coût du risque et frais de gestion,
+      on retient environ un quart à un tiers des intérêts bruts (calcul : make pipeline).
 
 opportunities:
   completeness:
@@ -159,6 +159,6 @@ opportunities:
       justification: >-
         Ordres de grandeur publiés sur l'IA générative en situation de travail réelle ou
         contrôlée : +14 % de productivité en support client (Brynjolfsson, Li et Raymond),
-        -40 % de temps sur des tâches de rédaction professionnelle (Noy et Zhang), +25 % de
+        −40 % de temps sur des tâches de rédaction professionnelle (Noy et Zhang), +25 % de
         vitesse sur des tâches de conseil (Dell'Acqua et al.). La validation reste une
         décision humaine : seule la préparation du dossier est accélérée.
