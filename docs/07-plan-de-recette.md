@@ -1,0 +1,97 @@
+# Plan de recette
+
+> Document généré par `make docs`. Les valeurs mesurées viennent des exports du pipeline ; les tests se lancent avec `make test` (Python et site) et `make e2e` (navigateur).
+
+## 1. Objectifs
+
+- Garantir que chaque chiffre publié est juste, reproductible et traçable.
+- Vérifier que le modèle respecte des seuils fixés **avant** son évaluation.
+- Recetter avec les métiers les trois opportunités sur des scénarios réalistes.
+- Vérifier que le rapport interactif fonctionne, reste lisible et accessible.
+
+## 2. Tests de données (automatisés)
+
+| Contrôle | Règle | Où |
+|---|---|---|
+| Volumétrie | 13 087 dossiers et 262 200 événements, sinon arrêt | `src/cpi/data.py`, `tests/test_contracts.py` |
+| Empreinte du fichier source | MD5 publiée par 4TU, ou SHA-256 de la copie de repli | `src/cpi/data.py` |
+| Champs obligatoires, doublons, ordre des événements | aucune anomalie bloquante | `src/cpi/quality.py` |
+| Issues | chaque dossier a au plus une issue ; les issues partitionnent les dossiers | `tests/test_contracts.py` |
+| Contrats d'export | clés attendues, parts entre 0 et 1, quantiles ordonnés, libellé français pour chaque activité | `tests/test_contracts.py` |
+| Rejeu | encodage valide pour chaque dossier (stations connues, écarts positifs) | `tests/test_contracts.py` |
+
+## 3. Tests du pipeline (automatisés)
+
+| Thème | Ce qui est vérifié | Où |
+|---|---|---|
+| Mini-journal synthétique | délais, efficacité de flux, phases, étape d'arrêt, sessions, attentes, boucles, abandons calculés à la main | `tests/test_kpi.py`, `tests/test_ingest_sessions.py` |
+| Ordre canonique | les jalons simultanés suivent l'ordre métier, les tâches gardent leur position | `tests/test_ingest_sessions.py` |
+| Découverte | carte des flux identique à celle de pm4py ; variantes ; conformité | `tests/test_discovery.py` |
+| Absence de fuite | les variables ne changent pas quand on supprime tout ce qui suit le point de décision | `tests/test_features_model.py` |
+| Découpage temporel | apprentissage avant la zone tampon, issues connues au déploiement, test après | `tests/test_features_model.py` |
+| Reproductibilité | deux entraînements donnent des prédictions identiques ; deux exécutions du pipeline donnent des exports identiques | `tests/test_features_model.py`, `make reproductibilite` |
+| Business case | invariants (pas de levier, pas de gain ; VAN décroissante avec le coût ; retour impossible sans bénéfice) ; Monte Carlo reproductible ; seuil de rentabilité | `tests/test_simulation.py` |
+| Concordance Python et site | le simulateur web reproduit les 15 scénarios de référence du pipeline | `site/tests/businessCase.test.ts` |
+| BPMN | XML valide, chaque élément dessiné, trois tâches IA dans le TO-BE | `tests/test_bpmn_report_data.py` |
+
+## 4. Seuils d'acceptation du modèle
+
+Fixés avant l'évaluation, appliqués à la période de test (offres de janvier 2012) :
+
+| Critère | Seuil | Mesuré | Statut |
+|---|---|---|---|
+| ROC-AUC sur la période de test | ≥ 0,65 | 0,555 | non atteint |
+| Lift à 20 % des dossiers | ≥ 1,5 | 1,157 | non atteint |
+| Écart de calibration (ECE) | ≤ 0,05 | 0,025 | atteint |
+| Stabilité du score (PSI apprentissage → test) | < 0,2 | 0,076 | atteint |
+
+**Décision : pas de mise en production du score.** Le modèle est calibré et stable, mais ne discrimine pas assez : la file du pilote sera triée par une règle simple.
+
+## 5. Scénarios de recette métier
+
+### Contrôle de complétude
+
+| N° | Scénario | Résultat attendu |
+|---|---|---|
+| R-01 | Dépôt avec une pièce d'identité expirée | Alerte immédiate, possibilité de remplacer la pièce, aucun refus |
+| R-02 | Dépôt complet | Aucune alerte, tâche de complétion limitée aux informations restantes |
+| R-03 | Alerte erronée levée par un conseiller | Alerte close avec motif, cas ajouté à l'échantillon qualité |
+| R-04 | Pièce étrangère peu lisible | Bascule vers un conseiller, pas de blocage du client |
+| R-05 | Mesure à 8 semaines | Taux de boucles « incomplet » comparé à la référence (51 % des dossiers validés) |
+
+### Relances priorisées (pilote)
+
+| N° | Scénario | Résultat attendu |
+|---|---|---|
+| R-06 | Tirage au sort des offres envoyées | Deux groupes équilibrés (montant, délai avant offre) |
+| R-07 | Consultation de la file par un conseiller du groupe test | File triée par priorité, priorité invisible des équipes d'octroi |
+| R-08 | Opposition d'un client au profilage | Le dossier sort de la priorisation, relance standard |
+| R-09 | Bilan du pilote | Écart de taux d'annulation entre groupes, avec intervalle de confiance ; décision go / no go |
+
+### Pré-analyse assistée (si réactivée)
+
+| N° | Scénario | Résultat attendu |
+|---|---|---|
+| R-10 | Dossier avec deux offres et des relances pour pièces | Fiche avec chronologie, points d'attention et sources |
+| R-11 | Montant mal extrait | Correction par l'analyste conservée et tracée |
+| R-12 | Recherche d'une appréciation de solvabilité dans la fiche | Aucune : la fiche reste factuelle |
+
+## 6. Recette du rapport interactif
+
+| Contrôle | Méthode |
+|---|---|
+| Chargement sans erreur, dix sections, pied de page | Test Playwright `site/e2e/smoke.spec.ts` |
+| Rejeu (lecture, pause), bascule de thème mémorisée | Test Playwright |
+| Carte de processus, simulateur, BPMN interactifs | Test Playwright |
+| Vue tableau de chaque graphique | Test Playwright |
+| Pas de défilement horizontal à 390 px | Test Playwright |
+| Typographie française de l'interface | `node scripts/typo-fr.mjs --check` |
+| Relecture visuelle clair, sombre, ordinateur, mobile | Captures `make screenshots` |
+| Mouvement réduit respecté | Préférence système : état final affiché sans animation |
+
+## 7. Critères de sortie
+
+- Tous les tests automatisés passent (`make test`, `make e2e`).
+- Les seuils du modèle sont appliqués tels que fixés, sans ajustement après coup.
+- Les scénarios métier sont joués et signés par les responsables concernés.
+- L'analyse d'impact et la qualification AI Act sont validées avant toute mise en service.
