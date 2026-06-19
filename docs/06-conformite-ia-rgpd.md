@@ -1,6 +1,6 @@
 # Conformité — AI Act, RGPD et droit du crédit
 
-> Document généré par `make docs`. État du droit au 2 novembre 2026. Cette analyse prépare l'instruction par la conformité et le délégué à la protection des données ; elle ne constitue pas un avis juridique.
+> Document généré par `make docs`. État du droit au 2 novembre 2026. Cette analyse prépare l'instruction par la conformité et le délégué à la protection des données ; elle ne constitue pas un avis juridique.
 
 ## 1. Calendrier applicable
 
@@ -9,20 +9,20 @@
 | 1er août 2024 | Entrée en vigueur de l'AI Act (règlement (UE) 2024/1689) | Cadre de référence |
 | 2 février 2025 | Pratiques interdites (article 5) et obligation de culture de l'IA (article 4) | Formation des équipes qui utilisent les outils |
 | 2 août 2025 | Obligations des fournisseurs de modèles d'IA à usage général | S'appliquent au fournisseur du modèle de langage, pas à l'établissement |
-| 2 août 2026 | Transparence (article 50) ; marquage des contenus générés avec délai jusqu'au 2 décembre 2026 pour les systèmes déjà en service | Informer le client qui échange avec un agent conversationnel |
+| 2 août 2026 | Transparence (article 50) ; marquage des contenus générés avec délai jusqu'au 2 décembre 2026 pour les systèmes déjà en service | Informer le client qui échange avec un agent conversationnel |
 | 20 novembre 2026 | Directive (UE) 2023/2225 sur le crédit aux consommateurs (CCD2) applicable | Évaluation de solvabilité (article 18), intervention humaine en cas de traitement automatisé |
-| 2 décembre 2027 | Obligations haut risque de l'annexe III, reportées par le règlement « omnibus numérique » (UE) 2026/1744 (JO du 24 juillet 2026) | Concerne l'évaluation de la solvabilité et le score de crédit (annexe III, point 5 b) |
+| 2 décembre 2027 | Obligations haut risque de l'annexe III, reportées par le règlement « omnibus numérique » (UE) 2026/1744 (JO du 24 juillet 2026) | Concerne l'évaluation de la solvabilité et le score de crédit (annexe III, point 5 b) |
 | 2 août 2028 | Obligations haut risque de l'annexe I (produits réglementés) | Hors périmètre |
 
 ## 2. La frontière à ne pas franchir
 
-L'annexe III, point 5 b, classe à haut risque les systèmes d'IA destinés à **évaluer la solvabilité** des personnes physiques ou à établir leur **score de crédit** (hors détection de fraude). Aucune des trois opportunités n'a cette finalité, et le programme s'interdit de l'acquérir par glissement :
+L'annexe III, point 5 b, classe à haut risque les systèmes d'IA destinés à **évaluer la solvabilité** des personnes physiques ou à établir leur **score de crédit** (hors détection de fraude). Aucune des trois opportunités n'a cette finalité, et le programme s'interdit de l'acquérir par glissement :
 
-- aucun modèle ne prédit si un client doit obtenir un crédit ou à quelles conditions ;
-- aucun résultat d'IA n'est transmis aux équipes d'octroi comme élément de décision ;
-- les tâches outillées préparent ou ordonnent le travail ; la décision reste celle d'un analyste.
+- aucun modèle ne prédit si un client doit obtenir un crédit ou à quelles conditions ;
+- aucun résultat d'IA n'est transmis aux équipes d'octroi comme élément de décision ;
+- les tâches outillées préparent ou ordonnent le travail ; la décision reste celle d'un analyste.
 
-Un système de l'annexe III n'est pas à haut risque s'il exécute une tâche procédurale étroite, améliore le résultat d'une activité humaine déjà réalisée, détecte des schémas de décision sans remplacer l'appréciation humaine ou exécute une tâche préparatoire (article 6, paragraphe 3) ; il reste à haut risque s'il réalise un profilage de personnes physiques. Le fournisseur qui invoque cette dérogation la documente et enregistre le système (articles 6, paragraphe 4, et 49, paragraphe 2).
+Un système de l'annexe III n'est pas à haut risque s'il exécute une tâche procédurale étroite, améliore le résultat d'une activité humaine déjà réalisée, détecte des schémas de décision sans remplacer l'appréciation humaine ou exécute une tâche préparatoire (article 6, paragraphe 3) ; il reste à haut risque s'il réalise un profilage de personnes physiques. Le fournisseur qui invoque cette dérogation la documente et enregistre le système (articles 6, paragraphe 4, et 49, paragraphe 2).
 
 ## 3. Qualification des trois opportunités
 
@@ -30,29 +30,29 @@ Un système de l'annexe III n'est pas à haut risque s'il exécute une tâche pr
 
 | Axe | Analyse |
 |---|---|
-| AI Act | Système d'IA (lecture et classement de pièces). Hors annexe III tant qu'il se limite à vérifier la présence, la lisibilité et la validité des pièces : tâche procédurale étroite. Article 50 si un agent conversationnel guide le client. |
-| RGPD | Base légale : mesures précontractuelles prises à la demande du client (article 6, paragraphe 1 b). Minimisation des pièces demandées, durées de conservation alignées sur le dossier, sous-traitant de lecture documentaire encadré par contrat (article 28), transferts hors Union évalués. |
+| AI Act | Système d'IA (lecture et classement de pièces). Hors annexe III tant qu'il se limite à vérifier la présence, la lisibilité et la validité des pièces : tâche procédurale étroite. Article 50 si un agent conversationnel guide le client. |
+| RGPD | Base légale : mesures précontractuelles prises à la demande du client (article 6, paragraphe 1 b). Minimisation des pièces demandées, durées de conservation alignées sur le dossier, sous-traitant de lecture documentaire encadré par contrat (article 28), transferts hors Union évalués. |
 | Risques | Pièce jugée manquante à tort (friction, abandon au dépôt), lecture moins fiable de certains documents. |
-| Garde-fous | Aucun refus automatique ; alerte contestable par le client et levable par un conseiller ; taux d'erreur suivi par type de pièce ; repli vers un conseiller. |
+| Garde-fous | Aucun refus automatique ; alerte contestable par le client et levable par un conseiller ; taux d'erreur suivi par type de pièce ; repli vers un conseiller. |
 
 ### Relances d'offres priorisées
 
 | Axe | Analyse |
 |---|---|
-| AI Act | Risque minimal : le score ordonne une file de relance et n'évalue pas la solvabilité. Il deviendrait à haut risque s'il servait un jour à l'octroi ou aux conditions du crédit. |
-| RGPD | Profilage (article 4, paragraphe 4) fondé sur l'intérêt légitime (article 6, paragraphe 1 f) avec mise en balance documentée ; information des clients sur le profilage (articles 13 et 14) ; droit d'opposition (article 21) ; analyse d'impact recommandée (évaluation de personnes et données financières). Pas de décision fondée exclusivement sur un traitement automatisé produisant des effets juridiques (article 22), à condition que le score n'influence jamais l'octroi : l'arrêt SCHUFA (CJUE, 7 décembre 2023, C-634/21) qualifie de décision automatisée un score qui joue un rôle déterminant dans la décision d'un tiers. |
+| AI Act | Risque minimal : le score ordonne une file de relance et n'évalue pas la solvabilité. Il deviendrait à haut risque s'il servait un jour à l'octroi ou aux conditions du crédit. |
+| RGPD | Profilage (article 4, paragraphe 4) fondé sur l'intérêt légitime (article 6, paragraphe 1 f) avec mise en balance documentée ; information des clients sur le profilage (articles 13 et 14) ; droit d'opposition (article 21) ; analyse d'impact recommandée (évaluation de personnes et données financières). Pas de décision fondée exclusivement sur un traitement automatisé produisant des effets juridiques (article 22), à condition que le score n'influence jamais l'octroi : l'arrêt SCHUFA (CJUE, 7 décembre 2023, C-634/21) qualifie de décision automatisée un score qui joue un rôle déterminant dans la décision d'un tiers. |
 | Risques | Glissement d'usage, traitement différencié des clients, dérive du modèle. |
-| Garde-fous | Usage limité par écrit à la relance ; score invisible des équipes d'octroi ; supervision mensuelle ; pilote A/B préalable. |
+| Garde-fous | Usage limité par écrit à la relance ; score invisible des équipes d'octroi ; supervision mensuelle ; pilote A/B préalable. |
 
 ### Pré-analyse assistée
 
 | Axe | Analyse |
 |---|---|
-| AI Act | La plus sensible : elle s'insère dans le processus d'octroi. Présumée à haut risque (annexe III, point 5 b) sauf démonstration documentée d'une tâche préparatoire sans profilage (article 6, paragraphes 3 et 4) et enregistrement (article 49, paragraphe 2). À défaut : système de gestion des risques, gouvernance des données, documentation technique, journalisation, contrôle humain (article 14), exactitude et robustesse, au plus tard le 2 décembre 2027. Le fournisseur du modèle de langage est soumis à ses propres obligations depuis le 2 août 2025 ; l'établissement qui assemble le système en devient fournisseur. |
-| RGPD | Données financières : analyse d'impact obligatoire ; sous-traitance et transferts encadrés ; aucune donnée réelle dans les invites sans base légale ; journalisation des accès. |
-| Droit du crédit | CCD2 (article 18) : l'évaluation de solvabilité reste celle de l'établissement ; si un traitement automatisé y contribue, le client peut obtenir une intervention humaine et une explication. La fiche ne doit contenir aucune appréciation de solvabilité. |
-| Résilience | Le fournisseur du modèle de langage est un prestataire de services informatiques au sens du règlement DORA (UE) 2022/2554 : registre, clauses contractuelles, plan de réversibilité. |
-| Garde-fous | Fiche factuelle sourcée, relue et corrigée par l'analyste ; échantillon de contrôle qualité ; mesure du biais d'automatisation (taux de corrections) ; aucune sortie de modèle de langage affichée sans relecture. |
+| AI Act | La plus sensible : elle s'insère dans le processus d'octroi. Présumée à haut risque (annexe III, point 5 b) sauf démonstration documentée d'une tâche préparatoire sans profilage (article 6, paragraphes 3 et 4) et enregistrement (article 49, paragraphe 2). À défaut : système de gestion des risques, gouvernance des données, documentation technique, journalisation, contrôle humain (article 14), exactitude et robustesse, au plus tard le 2 décembre 2027. Le fournisseur du modèle de langage est soumis à ses propres obligations depuis le 2 août 2025 ; l'établissement qui assemble le système en devient fournisseur. |
+| RGPD | Données financières : analyse d'impact obligatoire ; sous-traitance et transferts encadrés ; aucune donnée réelle dans les invites sans base légale ; journalisation des accès. |
+| Droit du crédit | CCD2 (article 18) : l'évaluation de solvabilité reste celle de l'établissement ; si un traitement automatisé y contribue, le client peut obtenir une intervention humaine et une explication. La fiche ne doit contenir aucune appréciation de solvabilité. |
+| Résilience | Le fournisseur du modèle de langage est un prestataire de services informatiques au sens du règlement DORA (UE) 2022/2554 : registre, clauses contractuelles, plan de réversibilité. |
+| Garde-fous | Fiche factuelle sourcée, relue et corrigée par l'analyste ; échantillon de contrôle qualité ; mesure du biais d'automatisation (taux de corrections) ; aucune sortie de modèle de langage affichée sans relecture. |
 
 ## 4. Fiche modèle — score de risque d'abandon
 
@@ -62,15 +62,15 @@ Un système de l'annexe III n'est pas à haut risque s'il exécute une tâche pr
 | Usages exclus | Octroi, conditions du crédit, tarification, évaluation des collaborateurs |
 | Point de décision | Envoi de la première offre (O_SENT) |
 | Étiquette | Dossier finalement annulé (1) contre approuvé ou refusé (0) |
-| Variables | 17 variables de processus (délais, appels, montant demandé, heures) ; aucun identifiant de collaborateur, aucun attribut sensible |
-| Apprentissage | Offres du 1er octobre 2011 au 1er décembre 2011 (exclu) dont l'issue était connue au déploiement simulé du 1er janvier 2012 : 1 938 dossiers |
-| Test | Offres du 2 janvier 2012 au 28 janvier 2012 : 950 dossiers, taux d'abandon 35,5 % |
-| Performance (LightGBM) | ROC-AUC 0,555 (IC 95 % 0,52 à 0,59), PR-AUC 0,405, écart de calibration 0,025 |
-| Comparaison | Règle simple (délai avant l'offre) : ROC-AUC 0,541 ; régression logistique : 0,540 |
-| Stabilité | PSI du score entre apprentissage et test : 0,076 |
-| Décision | Non déployable : seuils de discrimination non atteints |
-| Identifiant du conseiller | Exclu ; test d'ablation : ROC-AUC 0,479 avec cette seule variable, 0,539 en l'ajoutant aux autres contre 0,554 sans elle |
-| Équité | Non mesurable faute d'attribut sensible ; stabilité vérifiée par tranche de montant (ROC-AUC < 10 k€ : 0,52, 10–20 k€ : 0,53, ≥ 20 k€ : 0,63) |
+| Variables | 17 variables de processus (délais, appels, montant demandé, heures) ; aucun identifiant de collaborateur, aucun attribut sensible |
+| Apprentissage | Offres du 1er octobre 2011 au 1er décembre 2011 (exclu) dont l'issue était connue au déploiement simulé du 1er janvier 2012 : 1 938 dossiers |
+| Test | Offres du 2 janvier 2012 au 28 janvier 2012 : 950 dossiers, taux d'abandon 35,5 % |
+| Performance (LightGBM) | ROC-AUC 0,555 (IC 95 % 0,52 à 0,59), PR-AUC 0,405, écart de calibration 0,025 |
+| Comparaison | Règle simple (délai avant l'offre) : ROC-AUC 0,541 ; régression logistique : 0,540 |
+| Stabilité | PSI du score entre apprentissage et test : 0,076 |
+| Décision | Non déployable : seuils de discrimination non atteints |
+| Identifiant du conseiller | Exclu ; test d'ablation : ROC-AUC 0,479 avec cette seule variable, 0,539 en l'ajoutant aux autres contre 0,554 sans elle |
+| Équité | Non mesurable faute d'attribut sensible ; stabilité vérifiée par tranche de montant (ROC-AUC < 10 k€ : 0,52, 10–20 k€ : 0,53, ≥ 20 k€ : 0,63) |
 | Supervision prévue | PSI mensuel (alerte au-delà de 0,2), performance trimestrielle sur les issues connues, revue annuelle de la finalité |
 
 ## 5. Registre des risques
@@ -86,11 +86,11 @@ Un système de l'annexe III n'est pas à haut risque s'il exécute une tâche pr
 
 ## Sources
 
-- Règlement (UE) 2024/1689 (AI Act) : https://eur-lex.europa.eu/eli/reg/2024/1689/oj
-- EU Digital Omnibus on AI enters into force, National Law Review : https://natlawreview.com/article/eu-digital-omnibus-ai-enters-force
-- EU AI Act high-risk deadline: deferred, not cancelled, Cloud Security Alliance : https://labs.cloudsecurityalliance.org/research/csa-research-note-eu-ai-act-high-risk-deadline-omnibus-20260/
-- AI Omnibus adopted: what still applies from August 2, iubenda : https://www.iubenda.com/en/blog/ai-omnibus-adopted-august-2-obligations-july-2026/
-- Directive (UE) 2023/2225 (crédit aux consommateurs) : https://eur-lex.europa.eu/eli/dir/2023/2225/oj
-- CJUE, 7 décembre 2023, SCHUFA Holding (Scoring), C-634/21 : https://curia.europa.eu/juris/liste.jsf?num=C-634/21
-- Règlement (UE) 2016/679 (RGPD) : https://eur-lex.europa.eu/eli/reg/2016/679/oj
-- Règlement (UE) 2022/2554 (DORA) : https://eur-lex.europa.eu/eli/reg/2022/2554/oj
+- Règlement (UE) 2024/1689 (AI Act) : https://eur-lex.europa.eu/eli/reg/2024/1689/oj
+- EU Digital Omnibus on AI enters into force, National Law Review : https://natlawreview.com/article/eu-digital-omnibus-ai-enters-force
+- EU AI Act high-risk deadline: deferred, not cancelled, Cloud Security Alliance : https://labs.cloudsecurityalliance.org/research/csa-research-note-eu-ai-act-high-risk-deadline-omnibus-20260/
+- AI Omnibus adopted: what still applies from August 2, iubenda : https://www.iubenda.com/en/blog/ai-omnibus-adopted-august-2-obligations-july-2026/
+- Directive (UE) 2023/2225 (crédit aux consommateurs) : https://eur-lex.europa.eu/eli/dir/2023/2225/oj
+- CJUE, 7 décembre 2023, SCHUFA Holding (Scoring), C-634/21 : https://curia.europa.eu/juris/liste.jsf?num=C-634/21
+- Règlement (UE) 2016/679 (RGPD) : https://eur-lex.europa.eu/eli/reg/2016/679/oj
+- Règlement (UE) 2022/2554 (DORA) : https://eur-lex.europa.eu/eli/reg/2022/2554/oj

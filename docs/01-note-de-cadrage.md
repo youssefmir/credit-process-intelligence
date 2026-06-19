@@ -1,34 +1,34 @@
 # Note de cadrage — Credit Process Intelligence
 
-> Document généré par `make docs` à partir des exports du pipeline : les chiffres cités sont recalculés à chaque exécution.
+> Document généré par `make docs` à partir des exports du pipeline : les chiffres cités sont recalculés à chaque exécution.
 
 ## 1. Contexte
 
-Une institution néerlandaise de crédit à la consommation a publié le journal d'événements de son processus de demande de prêt (BPI Challenge 2012). Chaque demande y laisse une trace datée : dépôt, pré-contrôle automatique, appels de complétion, offre, relances, validation, décision.
+Une institution néerlandaise de crédit à la consommation a publié le journal d'événements de son processus de demande de prêt (BPI Challenge 2012). Chaque demande y laisse une trace datée : dépôt, pré-contrôle automatique, appels de complétion, offre, relances, validation, décision.
 
-La mission simule une intervention de conseil : partir de ces traces réelles pour comprendre le processus tel qu'il se déroule, mesurer où se perdent le temps et la valeur, puis identifier, chiffrer et sécuriser les usages de l'IA qui en valent la peine.
+La mission simule une intervention de conseil : partir de ces traces réelles pour comprendre le processus tel qu'il se déroule, mesurer où se perdent le temps et la valeur, puis identifier, chiffrer et sécuriser les usages de l'IA qui en valent la peine.
 
-Les rôles cités ci-dessous sont des rôles types : les données sont réelles et anonymisées, l'organisation interne de l'institution n'est pas connue.
+Les rôles cités ci-dessous sont des rôles types : les données sont réelles et anonymisées, l'organisation interne de l'institution n'est pas connue.
 
 ## 2. Questions métier
 
 | N° | Question | Livrable principal |
 |---|---|---|
-| Q1 | Quel est le parcours réel d'une demande ? | Carte des flux, variantes, conformité au chemin nominal |
-| Q2 | Combien de temps, et où se perd-il ? | Délais par issue, attente contre travail, goulots |
-| Q3 | Combien coûtent les allers-retours ? | Volumes, heures et délais des boucles de reprise |
-| Q4 | Qui abandonne, quand, et pourquoi ? | Annulations par étape, délai et montant |
-| Q5 | Peut-on prédire tôt le risque d'abandon ? | Modèle évalué hors période d'apprentissage, seuils d'acceptation |
-| Q6 | Quelles opportunités IA, quel gain, quels risques ? | Business case, qualification AI Act et RGPD, feuille de route |
+| Q1 | Quel est le parcours réel d'une demande ? | Carte des flux, variantes, conformité au chemin nominal |
+| Q2 | Combien de temps, et où se perd-il ? | Délais par issue, attente contre travail, goulots |
+| Q3 | Combien coûtent les allers-retours ? | Volumes, heures et délais des boucles de reprise |
+| Q4 | Qui abandonne, quand, et pourquoi ? | Annulations par étape, délai et montant |
+| Q5 | Peut-on prédire tôt le risque d'abandon ? | Modèle évalué hors période d'apprentissage, seuils d'acceptation |
+| Q6 | Quelles opportunités IA, quel gain, quels risques ? | Business case, qualification AI Act et RGPD, feuille de route |
 
 ## 3. Périmètre
 
-**Inclus** : le parcours d'une demande, du dépôt à l'issue (prêt activé, refus ou annulation), pour les 13 087 demandes déposées du 1er octobre 2011 au 29 février 2012.
+**Inclus** : le parcours d'une demande, du dépôt à l'issue (prêt activé, refus ou annulation), pour les 13 087 demandes déposées du 1er octobre 2011 au 29 février 2012.
 
-**Exclus** :
+**Exclus** :
 
-- l'octroi lui-même et le score de solvabilité : aucune analyse ne cherche à prédire si un client doit obtenir un crédit ;
-- la tarification, le recouvrement et la relation client après l'activation ;
+- l'octroi lui-même et le score de solvabilité : aucune analyse ne cherche à prédire si un client doit obtenir un crédit ;
+- la tarification, le recouvrement et la relation client après l'activation ;
 - toute donnée personnelle autre que celles du journal public (montant demandé, horodatages, identifiants pseudonymisés).
 
 ## 4. Données
@@ -43,7 +43,7 @@ Les rôles cités ci-dessous sont des rôles types : les données sont réelles 
 | Attributs utiles | activité, cycle de vie (planifiée, démarrée, terminée), horodatage, ressource pseudonymisée, montant demandé |
 | Source secondaire | BPI Challenge 2017 – Offer log, uniquement pour étalonner une hypothèse de marge |
 
-Limites connues dès le cadrage : cinq mois d'observation (annualisation nécessaire), pas de motif d'annulation, pas de pièce justificative, pas d'attribut sociodémographique.
+Limites connues dès le cadrage : cinq mois d'observation (annualisation nécessaire), pas de motif d'annulation, pas de pièce justificative, pas d'attribut sociodémographique.
 
 ## 5. Démarche et livrables
 
@@ -73,8 +73,8 @@ Limites connues dès le cadrage : cinq mois d'observation (annualisation nécess
 
 ## 7. Hypothèses de travail et contraintes
 
-- Le journal est représentatif du fonctionnement de l'institution sur la période ; la saisonnalité sur douze mois est inconnue.
-- Les coûts (coût horaire, coûts de construction et de fonctionnement) ne figurent pas dans les données : ils sont posés comme hypothèses explicites, avec une fourchette, et testés en sensibilité.
+- Le journal est représentatif du fonctionnement de l'institution sur la période ; la saisonnalité sur douze mois est inconnue.
+- Les coûts (coût horaire, coûts de construction et de fonctionnement) ne figurent pas dans les données : ils sont posés comme hypothèses explicites, avec une fourchette, et testés en sensibilité.
 - Aucun modèle ne doit toucher à la décision de crédit.
 - Tout chiffre publié doit être recalculable par une commande (`make all`).
 

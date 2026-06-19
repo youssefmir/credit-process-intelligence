@@ -1,11 +1,11 @@
 # User stories et critères d'acceptation
 
-> Document généré par `make docs` : les valeurs de référence citées viennent des exports du pipeline.
+> Document généré par `make docs` : les valeurs de référence citées viennent des exports du pipeline.
 
 ## Conventions
 
-- Format : « En tant que …, je veux …, afin de … », stories conformes à INVEST (indépendantes, négociables, porteuses de valeur, estimables, petites, testables).
-- Priorité MoSCoW : **M** (indispensable), **S** (important), **C** (souhaitable), **W** (pas dans cette version).
+- Format : « En tant que …, je veux …, afin de … », stories conformes à INVEST (indépendantes, négociables, porteuses de valeur, estimables, petites, testables).
+- Priorité MoSCoW : **M** (indispensable), **S** (important), **C** (souhaitable), **W** (pas dans cette version).
 - Estimation en points relatifs (suite de Fibonacci), à recalibrer avec l'équipe.
 - Critères d'acceptation en Gherkin (Étant donné, Quand, Alors), testables en recette (voir [le plan de recette](07-plan-de-recette.md)).
 
@@ -13,9 +13,9 @@
 
 | Épopée | Valeur visée | Référence mesurée | Priorité |
 |---|---|---|---|
-| E1 — Contrôle de complétude au dépôt | Moins de boucles « dossier incomplet » et d'appels de complétion | 51 % des dossiers validés passent par la boucle ; 3 689 h par an | M |
+| E1 — Contrôle de complétude au dépôt | Moins de boucles « dossier incomplet » et d'appels de complétion | 51 % des dossiers validés passent par la boucle ; 3 689 h par an | M |
 | E2 — Relances d'offres priorisées (pilote) | Récupérer une partie des offres non renvoyées | 35 % des offres envoyées finissent annulées | S |
-| E3 — Pré-analyse assistée des dossiers | Moins de temps de préparation de la validation | 2 126 h de validation observées en 5 mois | C |
+| E3 — Pré-analyse assistée des dossiers | Moins de temps de préparation de la validation | 2 126 h de validation observées en 5 mois | C |
 | E4 — Pilotage, conformité et supervision | Mesurer, prouver et maîtriser | Exigences AI Act, RGPD et CCD2 | M |
 
 ## E1 — Contrôle de complétude au dépôt
@@ -61,7 +61,7 @@ Alors elle ne contient que les informations encore manquantes
 ```
 
 **US-05 — Mesure de l'effet (M, 3 points)**
-En tant que responsable du back-office, je veux suivre chaque semaine le taux de dossiers validés passant par une boucle « incomplet », afin de vérifier le gain annoncé.
+En tant que responsable du back-office, je veux suivre chaque semaine le taux de dossiers validés passant par une boucle « incomplet », afin de vérifier le gain annoncé.
 
 ```gherkin
 Étant donné la référence mesurée avant projet (51 % des dossiers validés)
@@ -91,7 +91,7 @@ Alors le rapport compare les taux d'annulation des deux groupes avec un interval
 Et la décision d'industrialiser n'est prise que si l'écart est significatif
 ```
 
-Repère : le business case passe à l'équilibre pour un taux de récupération de 10,7 % des abandons ciblés.
+Repère : le business case passe à l'équilibre pour un taux de récupération de 10,7 % des abandons ciblés.
 
 **US-08 — Seuils de mise en production du score (M, 2 points)**
 En tant que responsable des risques, je veux que le score ne soit activé que s'il dépasse des seuils fixés à l'avance, afin d'éviter un outil inutile ou trompeur.
@@ -126,7 +126,7 @@ Et l'écart est enregistré pour l'évaluation de la qualité de l'outil
 ```
 
 **US-11 — Rédaction par un modèle de langage (W, 5 points)**
-En tant qu'analyste, je veux un brouillon rédigé de la note de synthèse, afin de gagner du temps de rédaction. *Reporté : à reconsidérer après la qualification AI Act (voir [la conformité](06-conformite-ia-rgpd.md)).*
+En tant qu'analyste, je veux un brouillon rédigé de la note de synthèse, afin de gagner du temps de rédaction. *Reporté : à reconsidérer après la qualification AI Act (voir [la conformité](06-conformite-ia-rgpd.md)).*
 
 ## E4 — Pilotage, conformité et supervision
 

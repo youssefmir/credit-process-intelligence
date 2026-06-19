@@ -55,6 +55,21 @@ def _cmd_bpmn(args: argparse.Namespace) -> None:
         print(f"Modèle BPMN : {path}")
 
 
+def _cmd_typo(args: argparse.Namespace) -> None:
+    from pathlib import Path
+
+    from cpi.config import DOCS_DIR, ROOT
+    from cpi.typo import check_files
+
+    paths = [Path(f) for f in args.files] or [ROOT / "README.md", *sorted(DOCS_DIR.glob("*.md"))]
+    bad = check_files(paths, write=not args.check)
+    for p in bad:
+        print(f"{'À corriger' if args.check else 'Corrigé'} : {p.name}")
+    if args.check and bad:
+        raise SystemExit(1)
+    print(f"Typographie : {len(paths)} fichier(s) vérifié(s).")
+
+
 def _cmd_assistant(args: argparse.Namespace) -> None:
     from cpi.assistant import main
 
@@ -67,6 +82,7 @@ COMMANDS: dict[str, tuple[Callable[[argparse.Namespace], None], str]] = {
     "pipeline": (_cmd_pipeline, "analyse complète et export JSON vers le site"),
     "docs": (_cmd_docs, "régénère les documents chiffrés depuis les exports"),
     "bpmn": (_cmd_bpmn, "régénère les modèles BPMN AS-IS et TO-BE"),
+    "typo": (_cmd_typo, "typographie française des documents Markdown"),
     "assistant": (_cmd_assistant, "fiche de pré-analyse d'un dossier (LLM facultatif)"),
 }
 
@@ -81,6 +97,9 @@ def main(argv: list[str] | None = None) -> int:
         if name == "pipeline":
             p.add_argument("--reingest", action="store_true", help="relire le XES")
             p.add_argument("--no-docs", action="store_true", help="sans BPMN ni documents")
+        if name == "typo":
+            p.add_argument("files", nargs="*", help="fichiers (défaut : README et docs)")
+            p.add_argument("--check", action="store_true", help="vérifier sans corriger")
         if name == "assistant":
             p.add_argument("case", help="identifiant du dossier (ex. 173688)")
             p.add_argument(

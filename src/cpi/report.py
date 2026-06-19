@@ -16,9 +16,10 @@ from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 from cpi import labels
 from cpi.config import DOCS_DIR, SITE_DATA_DIR
+from cpi.typo import fix_markdown
 
 TEMPLATES = Path(__file__).parent / "templates"
-NBSP = " "  # espace fine insécable (séparateur des milliers)
+NBSP = "\u202f"  # espace fine insécable (séparateur des milliers)
 
 
 def fr_num(x: float | int | None, digits: int = 0) -> str:
@@ -121,7 +122,7 @@ def render_all(out_dir: Path = DOCS_DIR) -> list[Path]:
     env = environment()
     written = []
     for tpl in sorted(TEMPLATES.glob("*.md.j2")):
-        text = env.get_template(tpl.name).render(**data)
+        text = fix_markdown(env.get_template(tpl.name).render(**data))
         path = out_dir / tpl.name.removesuffix(".j2")
         path.write_text(text, encoding="utf-8")
         written.append(path)
