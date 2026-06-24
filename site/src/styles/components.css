@@ -794,11 +794,12 @@
 
 /* --- Temps ------------------------------------------------------------------------------- */
 
+/* Une ligne de 24 carrés par journée : le délai se lit aussi en jours. */
 .waffle {
   display: grid;
-  grid-template-columns: repeat(20, minmax(0, 1fr));
+  grid-template-columns: repeat(24, minmax(0, 1fr));
   gap: 3px;
-  max-width: 560px;
+  max-width: 600px;
 }
 
 .waffle-cell {

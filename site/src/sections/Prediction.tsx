@@ -88,7 +88,8 @@ export default function Prediction({ data }: { data: AllData }) {
             symbol: "circle",
             symbolSize: 11,
             itemStyle: { color: p.blue, borderColor: p.bg, borderWidth: 2 },
-            label: { show: true, position: "bottom", distance: 10, color: p.ink, fontWeight: 650, formatter: () => `${pct(recall)} des abandons` },
+            // Sous la diagonale, à droite du point : zone libre de toute courbe.
+            label: { show: true, position: "right", offset: [4, 20], color: p.ink, fontWeight: 650, backgroundColor: p.bg, padding: [2, 4], formatter: () => `${pct(recall)} des abandons` },
             data: [{ coord: [share, recall] }],
           },
         },

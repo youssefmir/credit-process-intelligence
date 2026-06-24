@@ -278,7 +278,7 @@ export default function TimeLost({ data }: { data: AllData }) {
         <Reveal className="span-7">
           <Figure
             title="Le délai moyen d'un prêt approuvé, heure par heure"
-            subtitle={`Chaque carré représente une heure ; en couleur, le travail effectif (${hoursMinutes(sum.mean_work_h)}).`}
+            subtitle={`Chaque carré représente une heure, chaque ligne une journée ; en couleur, le travail effectif (${hoursMinutes(sum.mean_work_h)}).`}
             table={{
               columns: ["Phase", "Délai moyen", "Travail moyen"],
               rows: appr.map((ph) => [ph.label, `${num(ph.mean_elapsed_d, 2)} j`, hoursMinutes(ph.mean_work_h)]),
