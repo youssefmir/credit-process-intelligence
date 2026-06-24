@@ -18,9 +18,9 @@
 
 Lecture : le délai d'un dossier n'est presque jamais du travail. Il se passe à attendre le client (retour de l'offre signée) puis la file de validation. Le travail humain annuel est modeste (16 330 h par an, soit environ 10 équivalents temps plein), alors que les abandons portent sur des milliers de dossiers : la valeur est davantage dans la conversion que dans la productivité.
 
-![Carte de processus du rapport interactif](img/carte-processus.png)
+![Carte de processus du rapport interactif en mode performance, station « Offre envoyée » isolée](img/carte-processus.png)
 
-*La carte de processus en mode performance : la durée médiane entre l'envoi de l'offre et son retour signé domine toutes les autres.*
+*La carte de processus en mode performance, station « Offre envoyée » isolée : son retour signé (médiane 7,9 j) et son annulation (8,0 j) sont les deux liaisons fréquentes les plus longues du parcours.*
 
 ## 1. Données et qualité
 

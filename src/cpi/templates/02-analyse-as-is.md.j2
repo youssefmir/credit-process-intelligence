@@ -20,9 +20,12 @@
 
 Lecture : le délai d'un dossier n'est presque jamais du travail. Il se passe à attendre le client (retour de l'offre signée) puis la file de validation. Le travail humain annuel est modeste ({{ time.resources.annualized_hours | num }} h par an, soit environ {{ (time.resources.annualized_hours / 1607) | num }} équivalents temps plein), alors que les abandons portent sur des milliers de dossiers : la valeur est davantage dans la conversion que dans la productivité.
 
-![Carte de processus du rapport interactif](img/carte-processus.png)
+{% set sent_edges = process.maps.milestones.edges | selectattr("source", "equalto", "O_SENT") | list %}
+{% set to_back = sent_edges | selectattr("target", "equalto", "O_SENT_BACK") | first %}
+{% set to_cancel = sent_edges | selectattr("target", "equalto", "O_CANCELLED") | first %}
+![Carte de processus du rapport interactif en mode performance, station « Offre envoyée » isolée](img/carte-processus.png)
 
-*La carte de processus en mode performance : la durée médiane entre l'envoi de l'offre et son retour signé domine toutes les autres.*
+*La carte de processus en mode performance, station « Offre envoyée » isolée : son retour signé (médiane {{ (to_back.median_h / 24) | days }}) et son annulation ({{ (to_cancel.median_h / 24) | days }}) sont les deux liaisons fréquentes les plus longues du parcours.*
 
 ## 1. Données et qualité
 

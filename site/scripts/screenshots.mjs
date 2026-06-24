@@ -5,7 +5,8 @@
  *   npm run build && node scripts/screenshots.mjs
  *
  * Formats : 1440 × 900 (ordinateur) et 390 × 844 (mobile), thème clair pour la série
- * principale, PNG optimisés (moins de 300 Ko chacun).
+ * principale, PNG optimisés (moins de 300 Ko chacun). L'ouverture est capturée telle quelle ;
+ * les captures de détail sont recadrées sur un bloc (voir `frame` et `trim`).
  */
 import { spawn } from "node:child_process";
 import { mkdirSync, statSync } from "node:fs";
@@ -50,16 +51,92 @@ async function save(page, name) {
   console.log(`${name}.png  ${Math.round(statSync(path).size / 1024)} Ko`);
 }
 
-async function scrollTo(page, selector, offset = 72) {
-  await page.evaluate(
-    ([sel, off]) => {
-      const el = document.querySelector(sel);
-      if (!el) throw new Error(`introuvable : ${sel}`);
-      window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - off);
+const VIEW_H = 900;
+
+/**
+ * Cadre une capture sur l'essentiel, comme un recadrage : la barre de navigation fixe est
+ * masquée, le bloc `from` est posé en haut du cadre et le bloc `through` doit tenir en entier
+ * (la marge haute s'adapte, de 32 à 8 px). Les blocs coupés par un bord du cadre sont masqués.
+ */
+async function frame(page, from, through = from) {
+  const span = await page.evaluate(
+    ([a, b]) => {
+      for (const el of document.querySelectorAll("[data-shot-hidden]")) {
+        el.style.visibility = "";
+        el.removeAttribute("data-shot-hidden");
+      }
+      document.querySelector(".topbar").style.visibility = "hidden";
+      const top = document.querySelector(a);
+      const end = document.querySelector(b);
+      if (!top || !end) throw new Error(`introuvable : ${top ? b : a}`);
+      return end.getBoundingClientRect().bottom - top.getBoundingClientRect().top;
     },
-    [selector, offset],
+    [from, through],
+  );
+  const margin = Math.max(8, Math.min(32, Math.floor((VIEW_H - span) / 2)));
+  if (span + margin > VIEW_H) console.warn(`Attention : « ${through} » dépasse le cadre de ${Math.round(span + margin - VIEW_H)} px`);
+  await page.evaluate(
+    ([sel, m]) => {
+      const el = document.querySelector(sel);
+      window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - m);
+    },
+    [from, margin],
   );
   await page.waitForTimeout(1800);
+}
+
+/** Masque les blocs coupés par le haut ou le bas du cadre (après les interactions). */
+async function trim(page) {
+  await page.evaluate(() => {
+    const vh = window.innerHeight;
+    const blocks = document.querySelectorAll(
+      ".section-head > *, .wrap > :not(.grid), .grid > *, .wrap p, .wrap li, .wrap tr",
+    );
+    for (const el of blocks) {
+      const r = el.getBoundingClientRect();
+      if ((r.top < 0 && r.bottom > 0) || (r.top < vh && r.bottom > vh)) {
+        el.style.visibility = "hidden";
+        el.setAttribute("data-shot-hidden", "");
+      }
+    }
+  });
+  await page.waitForTimeout(150);
+}
+
+/**
+ * Carte en mode performance, station « Offre envoyée » isolée et centrée : horizontalement
+ * sur la station, verticalement entre ses deux issues (offre retournée, offre annulée).
+ */
+async function focusOfferSent(page) {
+  await page.getByRole("button", { name: "Performance" }).click();
+  await page.waitForTimeout(500);
+  const canvas = await page.locator(".pm-canvas").boundingBox();
+  const node = (text) => page.locator(".react-flow__node", { hasText: text }).first();
+  const center = async (text) => {
+    const b = await node(text).boundingBox();
+    return b ? { x: b.x + b.width / 2, y: b.y + b.height / 2 } : null;
+  };
+  // Glissements successifs (chacun reste dans le canevas) jusqu'au cadrage voulu.
+  for (let i = 0; i < 5 && canvas; i++) {
+    const [sent, back, cancelled] = await Promise.all(["Offre envoyée", "Offre retournée", "Offre annulée"].map(center));
+    if (!sent || !back || !cancelled) break;
+    const dx = sent.x - (canvas.x + canvas.width / 2);
+    const dy = (back.y + cancelled.y) / 2 - (canvas.y + canvas.height / 2);
+    if (Math.abs(dx) < 4 && Math.abs(dy) < 4) break;
+    const sx = Math.max(-(canvas.width - 120), Math.min(canvas.width - 120, dx));
+    const sy = Math.max(-(canvas.height - 120), Math.min(canvas.height - 120, dy));
+    const cx = canvas.x + canvas.width / 2;
+    // Départ sur le fond de carte, loin des stations (bord haut ou bas selon le sens).
+    const y0 = sy >= 0 ? canvas.y + 16 + sy : canvas.y + canvas.height - 16 + sy;
+    await page.mouse.move(cx + sx / 2, Math.max(canvas.y + 8, Math.min(canvas.y + canvas.height - 8, y0)));
+    await page.mouse.down();
+    await page.mouse.move(cx - sx / 2, Math.max(canvas.y + 8, Math.min(canvas.y + canvas.height - 8, y0 - sy)), { steps: 16 });
+    await page.mouse.up();
+    await page.waitForTimeout(200);
+  }
+  await page.waitForTimeout(400);
+  await node("Offre envoyée").click();
+  await page.waitForTimeout(800);
 }
 
 /** Fait défiler toute la page pour déclencher les apparitions, puis revient en haut. */
@@ -94,37 +171,20 @@ try {
     await page.getByRole("button", { name: /Mettre en pause le rejeu/ }).click();
     await warmUp(page);
     const shots = [
-      ["#synthese", "synthese"],
-      [".pm", "carte-processus", 140],
-      ["#temps .waffle", "temps-perdu", 200],
-      ["#prediction .acceptance", "prediction", 110],
-      ["#business-case .opp-table", "business-case", 120],
-      [".sim", "simulateur", 120],
-      ["#conformite .timeline", "conformite", 220],
+      ["synthese", "#synthese .section-head", "#synthese .findings"],
+      ["carte-processus", "#parcours .grid > :nth-child(2)", "#parcours .grid > :nth-child(2)", focusOfferSent],
+      ["temps-perdu", "#temps .section-head", "#temps .grid > :nth-child(2)"],
+      ["prediction", "#prediction .grid > :nth-child(3)", "#prediction .grid > :nth-child(7)"],
+      ["business-case", "#business-case .section-head", "#business-case .opp-table"],
+      ["simulateur", "#business-case .grid > :nth-child(4)", "#business-case .grid > :nth-child(4)"],
+      ["conformite", "#conformite .wrap > :nth-child(2)", "#conformite .wrap > :nth-child(3)"],
     ];
-    for (const [selector, name, offset] of shots) {
-      await scrollTo(page, selector, offset ?? 72);
-      if (name === "carte-processus") {
-        // Mode performance, puis déplacement jusqu'au cœur du processus (offre → validation).
-        await page.getByRole("button", { name: "Performance" }).click();
-        const box = await page.locator(".pm-canvas").boundingBox();
-        if (box) {
-          const y = box.y + box.height / 2;
-          for (let i = 0; i < 1; i++) {
-            await page.mouse.move(box.x + box.width - 60, y);
-            await page.mouse.down();
-            await page.mouse.move(box.x + 120, y, { steps: 12 });
-            await page.mouse.up();
-          }
-        }
-        await page.waitForTimeout(600);
-      }
+    for (const [name, from, through, prepare] of shots) {
+      await frame(page, from, through);
+      if (prepare) await prepare(page);
+      await trim(page);
       await save(page, name);
     }
-    await scrollTo(page, ".bpmn", 150);
-    await page.getByRole("tab", { name: /TO-BE/ }).click();
-    await page.waitForTimeout(1500);
-    await save(page, "bpmn-to-be");
     await ctx.close();
 
     // Mobile.
