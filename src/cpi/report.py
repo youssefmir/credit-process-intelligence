@@ -40,6 +40,17 @@ def fr_pct(x: float | None, digits: int = 0) -> str:
     return f"{fr_num(100 * float(x), digits)} %"
 
 
+def fr_share(x: float | None, compact: bool = False) -> str:
+    """Part de tirages : un événement rare mais observé ne s'affiche pas « 0 % » (ni « 100 % »)."""
+    if x is None:
+        return "n.d."
+    if 0 < x < 0.005:
+        return ("<\u00a0" if compact else "moins de ") + fr_pct(0.01)
+    if 0.995 <= x < 1:
+        return (">\u00a0" if compact else "plus de ") + fr_pct(0.99)
+    return fr_pct(x)
+
+
 def fr_eur(x: float | None, digits: int = 0, unit: str = "") -> str:
     """Montant en euros ; ``unit='k'`` pour les milliers d'euros."""
     if x is None:
@@ -107,6 +118,7 @@ def environment() -> Environment:
         {
             "num": fr_num,
             "pct": fr_pct,
+            "share": fr_share,
             "eur": fr_eur,
             "days": fr_days,
             "frdate": fr_date,

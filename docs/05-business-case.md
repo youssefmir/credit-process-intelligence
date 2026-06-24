@@ -8,7 +8,7 @@
 |---|---|---|---|---|---|
 | Contrôle automatique de complétude à la soumission | 105 k€ | −4 k€ / **48 k€** / 108 k€ | 88 % | 24 mois | Lancer |
 | Priorisation des relances d'offres par score d'abandon | 48 k€ | −45 k€ / **1 k€** / 68 k€ | 51 % | 36 mois | Pilote A/B d'abord |
-| Pré-analyse assistée des dossiers à valider | 53 k€ | −132 k€ / **−89 k€** / −45 k€ | 0 % | au-delà de 36 mois | Différer |
+| Pré-analyse assistée des dossiers à valider | 53 k€ | −132 k€ / **−89 k€** / −45 k€ | < 1 % | au-delà de 36 mois | Différer |
 
 Le contrôle de complétude est la seule opportunité rentable dans la grande majorité des scénarios. La priorisation des relances dépend d'un taux de récupération inconnu : elle se teste par un pilote peu coûteux, sans score d'IA à ce stade. La pré-analyse assistée ne se justifie pas à ce volume par la seule productivité.
 
@@ -132,7 +132,7 @@ Lecture : la VAN s'annule pour un taux de récupération de 10,7 % (hypothèse
 | VAN sur 36 mois | −80 k€ |
 | Retour sur investissement | au-delà de 36 mois |
 
-Monte Carlo : VAN médiane −89 k€ (P10 −132 k€, P90 −45 k€), positive dans 0 % des tirages.
+Monte Carlo : VAN médiane −89 k€ (P10 −132 k€, P90 −45 k€), positive dans moins de 1 % des tirages.
 
 Hypothèses les plus influentes (VAN quand l'hypothèse passe de son minimum à son maximum) :
 

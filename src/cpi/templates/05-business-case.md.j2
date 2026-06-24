@@ -9,7 +9,7 @@
 | Opportunité | Gain annuel (médiane) | VAN 3 ans P10 / P50 / P90 | P(VAN > 0) | Retour (central) | Recommandation |
 |---|---|---|---|---|---|
 {% for key, o in opps %}
-| {{ o.title }} | {{ o.monte_carlo.annual_benefit.p50 | eur(0, "k") }} | {{ o.monte_carlo.npv.p10 | eur(0, "k") }} / **{{ o.monte_carlo.npv.p50 | eur(0, "k") }}** / {{ o.monte_carlo.npv.p90 | eur(0, "k") }} | {{ o.monte_carlo.prob_npv_positive | pct }} | {{ (o.central.payback_month | string) + " mois" if o.central.payback_month else "au-delà de 36 mois" }} | {{ {"completeness": "Lancer", "prioritization": "Pilote A/B d'abord", "preanalysis": "Différer"}[key] }} |
+| {{ o.title }} | {{ o.monte_carlo.annual_benefit.p50 | eur(0, "k") }} | {{ o.monte_carlo.npv.p10 | eur(0, "k") }} / **{{ o.monte_carlo.npv.p50 | eur(0, "k") }}** / {{ o.monte_carlo.npv.p90 | eur(0, "k") }} | {{ o.monte_carlo.prob_npv_positive | share(true) }} | {{ (o.central.payback_month | string) + " mois" if o.central.payback_month else "au-delà de 36 mois" }} | {{ {"completeness": "Lancer", "prioritization": "Pilote A/B d'abord", "preanalysis": "Différer"}[key] }} |
 {% endfor %}
 
 Le contrôle de complétude est la seule opportunité rentable dans la grande majorité des scénarios. La priorisation des relances dépend d'un taux de récupération inconnu : elle se teste par un pilote peu coûteux, sans score d'IA à ce stade. La pré-analyse assistée ne se justifie pas à ce volume par la seule productivité.
@@ -77,7 +77,7 @@ Sources des ordres de grandeur de productivité de l'IA générative : Brynjolfs
 | VAN sur 36 mois | {{ o.central.npv | eur(0, "k") }} |
 | Retour sur investissement | {{ (o.central.payback_month | string) + " mois" if o.central.payback_month else "au-delà de 36 mois" }} |
 
-Monte Carlo : VAN médiane {{ o.monte_carlo.npv.p50 | eur(0, "k") }} (P10 {{ o.monte_carlo.npv.p10 | eur(0, "k") }}, P90 {{ o.monte_carlo.npv.p90 | eur(0, "k") }}), positive dans {{ o.monte_carlo.prob_npv_positive | pct }} des tirages.{% if o.monte_carlo.median_lead_time_approved_after_d is defined %} Délai médian des prêts approuvés après rejeu : {{ o.monte_carlo.median_lead_time_approved_after_d.p50 | days }} (contre {{ bc.baseline.median_lead_time_approved_d | days }}).{% endif %}
+Monte Carlo : VAN médiane {{ o.monte_carlo.npv.p50 | eur(0, "k") }} (P10 {{ o.monte_carlo.npv.p10 | eur(0, "k") }}, P90 {{ o.monte_carlo.npv.p90 | eur(0, "k") }}), positive dans {{ o.monte_carlo.prob_npv_positive | share }} des tirages.{% if o.monte_carlo.median_lead_time_approved_after_d is defined %} Délai médian des prêts approuvés après rejeu : {{ o.monte_carlo.median_lead_time_approved_after_d.p50 | days }} (contre {{ bc.baseline.median_lead_time_approved_d | days }}).{% endif %}
 
 
 Hypothèses les plus influentes (VAN quand l'hypothèse passe de son minimum à son maximum) :

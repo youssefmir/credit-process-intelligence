@@ -8,7 +8,13 @@ import Reveal from "../components/Reveal";
 import Section from "../components/Section";
 import Simulator from "../components/Simulator";
 import type { AllData, OppKey, Opportunity } from "../lib/data";
-import { keur, num, pct } from "../lib/format";
+import { keur, num, pct, share } from "../lib/format";
+
+/** « = 88 % », ou « < 1 % » quand la part est trop faible pour être arrondie. */
+function probRelation(x: number): string {
+  const s = share(x, true);
+  return /^[<>]/.test(s) ? s : `= ${s}`;
+}
 
 const ORDER: OppKey[] = ["completeness", "prioritization", "preanalysis"];
 
@@ -99,7 +105,7 @@ export default function Opportunities({ data }: { data: AllData }) {
           left: narrow ? 40 : `${3 + i * 33}%`,
           top: narrow ? 8 + i * 150 : 6,
           style: {
-            text: `${bc.opportunities[k].short} — P(VAN > 0) = ${pct(bc.opportunities[k].monte_carlo.prob_npv_positive)}`,
+            text: `${bc.opportunities[k].short} — P(VAN > 0) ${probRelation(bc.opportunities[k].monte_carlo.prob_npv_positive)}`,
             fill: p.ink,
             font: '600 13px "Archivo Variable", sans-serif',
           },
@@ -149,7 +155,7 @@ export default function Opportunities({ data }: { data: AllData }) {
       kicker="Opportunités IA et business case"
       title={
         <>
-          Une opportunité sur trois est rentable : le contrôle de complétude, positif dans {pct(comp.monte_carlo.prob_npv_positive)} des scénarios.
+          Une opportunité sur trois est rentable : le contrôle de complétude, positif dans {share(comp.monte_carlo.prob_npv_positive)} des scénarios.
         </>
       }
       lede={
@@ -189,7 +195,7 @@ export default function Opportunities({ data }: { data: AllData }) {
                     <span className="muted">{keur(mc.npv.p10, 0, true)}</span> <strong>{keur(mc.npv.p50, 0, true)}</strong>{" "}
                     <span className="muted">{keur(mc.npv.p90, 0, true)}</span>
                   </span>
-                  <span className="muted small">VAN positive dans {pct(mc.prob_npv_positive)} des tirages</span>
+                  <span className="muted small">VAN positive dans {share(mc.prob_npv_positive)} des tirages</span>
                 </span>
                 <span role="cell" className="num">
                   {o.central.payback_month === null ? "au-delà de 36 mois" : `${o.central.payback_month} mois`}
@@ -210,7 +216,7 @@ export default function Opportunities({ data }: { data: AllData }) {
               columns: ["Opportunité", "P10", "P50", "P90", "P(VAN > 0)"],
               rows: ORDER.map((k) => {
                 const q = bc.opportunities[k].monte_carlo.npv;
-                return [bc.opportunities[k].short, keur(q.p10, 0, true), keur(q.p50, 0, true), keur(q.p90, 0, true), pct(bc.opportunities[k].monte_carlo.prob_npv_positive)];
+                return [bc.opportunities[k].short, keur(q.p10, 0, true), keur(q.p50, 0, true), keur(q.p90, 0, true), share(bc.opportunities[k].monte_carlo.prob_npv_positive, true)];
               }),
               numeric: [1, 2, 3, 4],
             }}

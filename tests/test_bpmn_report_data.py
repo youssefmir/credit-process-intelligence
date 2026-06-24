@@ -55,6 +55,14 @@ def test_french_number_formatting() -> None:
     assert report.fr_eur(47918, unit="k") == "48 k€"
 
 
+def test_rare_share_is_not_rounded_to_zero() -> None:
+    assert report.fr_share(0.8774) == "88\u00a0%"
+    assert report.fr_share(0.0036) == "moins de 1\u00a0%"
+    assert report.fr_share(0.0036, compact=True) == "<\u00a01\u00a0%"
+    assert report.fr_share(0.0) == "0\u00a0%"
+    assert report.fr_share(0.998) == "plus de 99\u00a0%"
+
+
 def test_templates_render_without_missing_values() -> None:
     root = Path(__file__).resolve().parents[1] / "site" / "public" / "data"
     if not (root / "summary.json").exists():

@@ -2,7 +2,7 @@ import CountUp from "../components/CountUp";
 import Reveal from "../components/Reveal";
 import Section from "../components/Section";
 import type { AllData, OppKey } from "../lib/data";
-import { hoursMinutes, keur, num, pct } from "../lib/format";
+import { hoursMinutes, keur, num, pct, share } from "../lib/format";
 
 const VERDICT: Record<OppKey, { tag: string; cls: string; text: string }> = {
   completeness: { tag: "Lancer", cls: "ok", text: "Seule opportunité rentable dans la majorité des scénarios." },
@@ -106,7 +106,7 @@ export default function Summary({ data }: { data: AllData }) {
                         {keur(o.monte_carlo.npv.p10, 0, true)} à {keur(o.monte_carlo.npv.p90, 0, true)}
                       </span>
                     </td>
-                    <td className="r">{pct(o.monte_carlo.prob_npv_positive)}</td>
+                    <td className="r">{share(o.monte_carlo.prob_npv_positive, true)}</td>
                   </tr>
                 );
               })}
