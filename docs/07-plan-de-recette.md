@@ -33,6 +33,7 @@
 | Business case | invariants (pas de levier, pas de gain ; VAN décroissante avec le coût ; retour impossible sans bénéfice) ; Monte Carlo reproductible ; seuil de rentabilité | `tests/test_simulation.py` |
 | Concordance Python et site | le simulateur web reproduit les 15 scénarios de référence du pipeline | `site/tests/businessCase.test.ts` |
 | BPMN | XML valide, chaque élément dessiné, trois tâches IA dans le TO-BE | `tests/test_bpmn_report_data.py` |
+| README et documents | chiffres clés du README identiques aux exports, typographie française, liens relatifs valides | `tests/test_readme.py`, `scripts/check_links.py` |
 
 ## 4. Seuils d'acceptation du modèle
 
@@ -87,6 +88,7 @@ Fixés avant l'évaluation, appliqués à la période de test (offres de janvier
 | Pas de défilement horizontal à 390 px | Test Playwright |
 | Typographie française de l'interface | `node scripts/typo-fr.mjs --check` |
 | Relecture visuelle clair, sombre, ordinateur, mobile | Captures `make screenshots` |
+| Rendu du README façon GitHub (schéma Mermaid, images) | `make readme-render`, capture relue |
 | Mouvement réduit respecté | Préférence système : état final affiché sans animation |
 
 ## 7. Critères de sortie
