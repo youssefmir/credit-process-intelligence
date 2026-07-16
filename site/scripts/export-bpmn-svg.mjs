@@ -14,6 +14,16 @@ const root = resolve(here, "..", "..");
 const viewerJs = readFileSync(resolve(here, "..", "node_modules/bpmn-js/dist/bpmn-viewer.production.min.js"), "utf-8");
 const css = ["diagram-js.css", "bpmn-js.css"].map((f) => readFileSync(resolve(here, "..", "node_modules/bpmn-js/dist/assets", f), "utf-8")).join("\n");
 
+/** Identifiants de marqueurs déterministes (bpmn-js les tire au hasard) : même SVG à chaque export. */
+function stableIds(svg) {
+  const ids = new Map();
+  // Les identifiants aléatoires comptent 25 caractères ; « marker-end » et consorts ne sont pas touchés.
+  return svg.replace(/\bmarker-[a-z0-9]{10,}\b/g, (id) => {
+    if (!ids.has(id)) ids.set(id, `marker-${ids.size + 1}`);
+    return ids.get(id);
+  });
+}
+
 const browser = await chromium.launch();
 try {
   const page = await browser.newPage({ viewport: { width: 2400, height: 1200 } });
@@ -32,7 +42,7 @@ try {
       return svg;
     }, xml);
     const out = resolve(root, "docs/bpmn", `${name}.svg`);
-    writeFileSync(out, svg);
+    writeFileSync(out, `${stableIds(svg)}\n`);
     console.log(`SVG écrit : docs/bpmn/${name}.svg (${Math.round(svg.length / 1024)} Ko)`);
   }
 } finally {

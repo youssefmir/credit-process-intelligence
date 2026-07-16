@@ -8,6 +8,7 @@ mesurés par le pipeline (aucune saisie manuelle).
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -456,6 +457,26 @@ def layout(model: Model) -> tuple[dict[str, Box], dict[str, Box], Box, Box]:
     return boxes, lanes, pool, client
 
 
+def _anchor(kind: str, b: Box, toward: tuple[float, float]) -> tuple[float, float]:
+    """Point du contour de l'élément en direction de ``toward`` : départ d'une association.
+
+    Partir du centre ferait traverser le libellé de la tâche par le pointillé.
+    """
+    dx, dy = toward[0] - b.cx, toward[1] - b.cy
+    if dx == 0 and dy == 0:
+        return (b.cx, b.cy)
+    if kind.endswith("Event"):  # cercle
+        n = math.hypot(dx, dy)
+        return (b.cx + b.w / 2 * dx / n, b.cy + b.w / 2 * dy / n)
+    if kind.endswith("Gateway"):  # losange
+        s = (b.w / 2) / (abs(dx) + abs(dy))
+        return (b.cx + s * dx, b.cy + s * dy)
+    sx = (b.w / 2) / abs(dx) if dx else math.inf
+    sy = (b.h / 2) / abs(dy) if dy else math.inf
+    s = min(sx, sy)
+    return (b.cx + s * dx, b.cy + s * dy)
+
+
 def route(f: Flow, a: Box, b: Box) -> list[tuple[float, float]]:
     if f.points:
         return f.points
@@ -605,6 +626,7 @@ def to_xml(model: Model) -> str:
             b = boxes[src]
             pts = [(b.cx + 20, b.y), (b.cx + 20, client.bottom)]
         di.append(_edge(f"{mid}_di", mid, pts, ""))
+    kinds = {n.id: n.kind for n in model.nodes}
     for a in model.annotations:
         t = boxes[a.target]
         box = Box(t.cx + a.dx, t.cy + a.dy, a.width, a.height)
@@ -617,7 +639,8 @@ def to_xml(model: Model) -> str:
             end = (box.x, box.cy)
         else:
             end = (box.right, box.cy)
-        di.append(_edge(f"{a.id}_assoc_di", f"{a.id}_assoc", [(t.cx, t.cy), end], ""))
+        start = _anchor(kinds[a.target], t, end)
+        di.append(_edge(f"{a.id}_assoc_di", f"{a.id}_assoc", [start, end], ""))
 
     body = "".join(elements)
     return (
