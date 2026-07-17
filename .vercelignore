@@ -1,0 +1,13 @@
+# The web report already includes its generated datasets in site/public.
+data/
+docs/
+notebooks/
+src/
+tests/
+config/
+.venv/
+**/node_modules/
+site/dist/
+site/test-results/
+site/playwright-report/
+.env*

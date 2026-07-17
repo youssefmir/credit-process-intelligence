@@ -14,6 +14,7 @@ data/interim/
 data/models/
 
 # Site
+.vercel/
 node_modules/
 site/dist/
 site/test-results/
