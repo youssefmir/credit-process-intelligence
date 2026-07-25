@@ -14,7 +14,7 @@ export const SECTIONS = [
 
 export const REPO_URL = "https://github.com/youssefmir/credit-process-intelligence";
 export const AUTHOR_URL = "https://github.com/youssefmir";
-export const DEMO_URL = "https://youssefmir.github.io/credit-process-intelligence/";
+export const DEMO_URL = "https://credit-process-intelligence.vercel.app/";
 
 export function docUrl(path: string): string {
   return `${REPO_URL}/blob/main/${path}`;

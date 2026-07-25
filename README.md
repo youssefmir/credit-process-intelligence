@@ -2,7 +2,7 @@
 
 > Le diagnostic data et IA d'un processus réel de crédit à la consommation, pour les directions des opérations, les Business Analysts et les équipes conformité, afin de savoir où l'IA rapporte vraiment, combien, et à quelles conditions.
 
-**[Voir la démo](https://youssefmir.github.io/credit-process-intelligence/)** · [Démarche BA](#la-démarche-business-analyst) · [Résultats clés](#ce-que-révèlent-les-données)
+**[Voir la démo](https://credit-process-intelligence.vercel.app/)** · [Démarche BA](#la-démarche-business-analyst) · [Résultats clés](#ce-que-révèlent-les-données)
 
 ![Ouverture du rapport : le titre « Un dossier approuvé passe 99,6 % de son délai à attendre », trois chiffres clés et le plan de réseau où circulent les dossiers réels](docs/img/ouverture-clair.png)
 *Ouverture du rapport interactif : le constat clé et le rejeu animé des 13 087 demandes réelles sur un plan de réseau.*
@@ -29,7 +29,7 @@
 
 ## Essayer en 1 minute
 
-1. En ligne, sans installation : [youssefmir.github.io/credit-process-intelligence](https://youssefmir.github.io/credit-process-intelligence/).
+1. En ligne, sans installation : [credit-process-intelligence.vercel.app](https://credit-process-intelligence.vercel.app/).
 2. En local, avec git, make et Node.js 20 ou plus (les résultats du pipeline sont déjà dans le dépôt) :
 
 ```bash
@@ -153,6 +153,12 @@ Prérequis : [uv](https://docs.astral.sh/uv/) (installe Python 3.12), Node.js 2
 | `make all` | Enchaîne tout, de l'installation aux captures |
 
 `make help` liste toutes les cibles, dont `make reproductibilite` (relance le pipeline et vérifie que rien ne change).
+
+Le rapport est publié sur [Vercel](https://credit-process-intelligence.vercel.app/).
+Chaque push sur `main` déclenche une publication automatique. La configuration
+`vercel.json` installe les dépendances dans `site/`, compile avec
+`BASE_PATH=/ npm --prefix site run build`, puis publie `site/dist/`. Les résultats
+du pipeline Python sont déjà exportés dans le site.
 
 ## Qualité, données et limites
 
